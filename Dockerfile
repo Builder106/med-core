@@ -1,16 +1,16 @@
-FROM node:20-alpine AS frontend-build
+FROM node:26-alpine AS frontend-build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --include=dev --ignore-scripts
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine AS server-deps
+FROM node:26-alpine AS server-deps
 WORKDIR /app/server
 COPY server/package.json server/package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts
 
-FROM node:20-alpine AS runtime
+FROM node:26-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 RUN apk add --no-cache dumb-init && adduser -D -u 1001 medcore
