@@ -7,6 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "start": "node --import tsx/esm src/index.ts",
     "test": "vitest run",
+    "typecheck": "tsc --noEmit",
     "migrate": "tsx src/db/migrate.ts"
   },
   "dependencies": {
