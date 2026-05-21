@@ -7,8 +7,8 @@ RUN npm run build
 
 FROM node:20-alpine AS server-deps
 WORKDIR /app/server
-COPY server/package.json ./
-RUN npm install --omit=dev --ignore-scripts
+COPY server/package.json server/package-lock.json ./
+RUN npm ci --omit=dev --ignore-scripts
 
 FROM node:20-alpine AS runtime
 ENV NODE_ENV=production
