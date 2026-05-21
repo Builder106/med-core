@@ -1,0 +1,117 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+            arch_tag: amd64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            arch_tag: arm64
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest_amd64: ${{ steps.export-digest.outputs.digest_amd64 }}
+      digest_arm64: ${{ steps.export-digest.outputs.digest_arm64 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lowercase image name
+        id: img
+        run: echo "name=${IMAGE_NAME,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push per-arch image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          push: true
+          provenance: false
+          tags: ${{ env.REGISTRY }}/${{ steps.img.outputs.name }}:sha-${{ github.sha }}-${{ matrix.arch_tag }}
+          cache-from: type=gha,scope=${{ matrix.arch_tag }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.arch_tag }}
+
+      - name: Export digest
+        id: export-digest
+        run: |
+          echo "digest_${{ matrix.arch_tag }}=${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
+
+  manifest:
+    name: Create multi-arch manifest
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Lowercase image name
+        id: img
+        run: echo "name=${IMAGE_NAME,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute short SHA
+        id: sha
+        run: echo "short=${GITHUB_SHA:0:7}" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push multi-arch manifests
+        run: |
+          set -euo pipefail
+          IMG=${{ env.REGISTRY }}/${{ steps.img.outputs.name }}
+          AMD64=$IMG:sha-${{ github.sha }}-amd64
+          ARM64=$IMG:sha-${{ github.sha }}-arm64
+          for TAG in latest main sha-${{ steps.sha.outputs.short }}; do
+            docker buildx imagetools create \
+              --tag "$IMG:$TAG" \
+              "$AMD64" "$ARM64"
+          done
+
+      - name: Summary
+        run: |
+          {
+            echo "### Image published"
+            echo ""
+            echo "- \`${REGISTRY}/${{ steps.img.outputs.name }}:latest\`"
+            echo "- \`${REGISTRY}/${{ steps.img.outputs.name }}:main\`"
+            echo "- \`${REGISTRY}/${{ steps.img.outputs.name }}:sha-${{ steps.sha.outputs.short }}\`"
+            echo ""
+            echo "Pull: \`docker pull ${REGISTRY}/${{ steps.img.outputs.name }}:latest\`"
+          } >> "$GITHUB_STEP_SUMMARY"
