@@ -4,7 +4,8 @@ import helmet from 'helmet';
 import cron from 'node-cron';
 import { eq, lte, and } from 'drizzle-orm';
 import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
+import { existsSync } from 'node:fs';
 import { env } from './lib/env.js';
 import { logger } from './lib/logger.js';
 import { getDb, schema } from './db/index.js';
@@ -86,6 +87,14 @@ export async function createApp() {
   app.use('/api', facilitiesRouter);
   app.use('/api', fhirRouter);
   app.use('/api', integrationsRouter);
+
+  const distDir = resolve(dirname(fileURLToPath(import.meta.url)), '../../dist');
+  if (existsSync(distDir)) {
+    app.use(express.static(distDir, { maxAge: '1h', index: 'index.html' }));
+    app.get(/^(?!\/api\/).*$/, (_req, res) => {
+      res.sendFile(resolve(distDir, 'index.html'));
+    });
+  }
 
   app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
     logger.error('unhandled_error', { path: req.path, method: req.method, message: err.message });
