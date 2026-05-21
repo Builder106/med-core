@@ -1,10 +1,67 @@
-import { auditLog } from '../data/mock-data';
+import { useEffect, useState } from 'react';
+import { auditLog as mockAudit } from '../data/mock-data';
 import { Download } from 'lucide-react';
 import { ResponsiveTable, type TableColumn } from '../components/ui/responsive-table';
+import { listAudit, type AuditEntry } from '../services/api';
 
-type AuditRow = (typeof auditLog)[number];
+interface AuditRow {
+  id: string;
+  timestamp: number;
+  patientId: string;
+  accessedBy: string;
+  role: string;
+  action: string;
+  section: string;
+  facility: string;
+}
+
+function apiToRow(entry: AuditEntry): AuditRow {
+  return {
+    id: entry.id,
+    timestamp: entry.createdAt,
+    patientId: entry.patientId ?? '—',
+    accessedBy: entry.userId ?? 'anonymous',
+    role: entry.role ?? 'unknown',
+    action: entry.action,
+    section: entry.path.replace(/^\//, ''),
+    facility: `${entry.method} · ${entry.status}`,
+  };
+}
 
 export function AuditLogPage() {
+  const [rows, setRows] = useState<AuditRow[]>([]);
+  const [apiOk, setApiOk] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await listAudit({ limit: 200 });
+        if (cancelled) return;
+        setRows(res.entries.map(apiToRow));
+        setApiOk(true);
+      } catch {
+        if (cancelled) return;
+        setApiOk(false);
+        setRows(mockAudit.map(a => ({
+          id: a.id,
+          timestamp: new Date(a.timestamp).getTime(),
+          patientId: a.patientId,
+          accessedBy: a.accessedBy,
+          role: a.role,
+          action: a.action,
+          section: a.section,
+          facility: a.facility,
+        })));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const columns: TableColumn<AuditRow>[] = [
     {
       key: 'ts',
@@ -35,11 +92,16 @@ export function AuditLogPage() {
           <Download className="w-4 h-4" /> Export CSV
         </button>
       </div>
+      {!apiOk && (
+        <div className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          API unreachable — showing legacy demo data. Audit endpoint is admin-only.
+        </div>
+      )}
       <ResponsiveTable
         columns={columns}
-        rows={auditLog}
+        rows={rows}
         rowKey={a => a.id}
-        emptyLabel="No audit entries"
+        emptyLabel={loading ? 'Loading audit log…' : 'No audit entries'}
         mobileTitle={a => `${a.action} · ${a.section}`}
         mobileSubtitle={a => `${a.accessedBy} — ${new Date(a.timestamp).toLocaleString()}`}
       />

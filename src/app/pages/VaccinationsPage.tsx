@@ -1,16 +1,82 @@
-import { vaccinations, patients } from '../data/mock-data';
+import { useEffect, useState } from 'react';
+import { vaccinations as mockVax, patients } from '../data/mock-data';
 import { useApp } from '../context/AppContext';
 import { Syringe, AlertTriangle } from 'lucide-react';
+import { listVaccinations, type Vaccination } from '../services/api';
+
+interface VaxRow {
+  id: string;
+  patientId: string;
+  vaccine: string;
+  dose: string;
+  date: string;
+  site: string;
+  batchNumber: string;
+  nextDue?: string;
+}
+
+function apiToRow(v: Vaccination): VaxRow {
+  return {
+    id: v.id,
+    patientId: v.patientId,
+    vaccine: v.vaccineName,
+    dose: `Dose ${v.doseNumber}`,
+    date: new Date(v.administeredAt).toISOString().slice(0, 10),
+    site: v.site ?? '—',
+    batchNumber: v.batch ?? '—',
+    nextDue: v.nextDueAt ? new Date(v.nextDueAt).toISOString().slice(0, 10) : undefined,
+  };
+}
 
 export function VaccinationsPage() {
   const { role, currentPatientId } = useApp();
-  const vax = role === 'patient' ? vaccinations.filter(v => v.patientId === currentPatientId) : vaccinations;
+  const [rows, setRows] = useState<VaxRow[]>([]);
+  const [apiOk, setApiOk] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!currentPatientId) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await listVaccinations(currentPatientId);
+        if (cancelled) return;
+        setRows(res.vaccinations.map(apiToRow));
+        setApiOk(true);
+      } catch {
+        if (cancelled) return;
+        setApiOk(false);
+        const mocks = (role === 'patient' ? mockVax.filter(v => v.patientId === currentPatientId) : mockVax).map(v => ({
+          id: v.id,
+          patientId: v.patientId,
+          vaccine: v.vaccine,
+          dose: v.dose,
+          date: v.date,
+          site: v.site,
+          batchNumber: v.batchNumber,
+          nextDue: v.nextDue,
+        }));
+        setRows(mocks);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [currentPatientId, role]);
 
   return (
     <div className="max-w-5xl space-y-6">
       <h1 className="text-[22px]">Vaccinations</h1>
+      {!apiOk && (
+        <div className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          API unreachable — showing legacy demo data.
+        </div>
+      )}
       <div className="space-y-3">
-        {vax.map(v => {
+        {loading && <p className="text-[13px] text-gray-500">Loading vaccinations…</p>}
+        {!loading && rows.length === 0 && <p className="text-[13px] text-gray-500">No vaccinations on record.</p>}
+        {rows.map(v => {
           const patient = patients.find(p => p.id === v.patientId);
           const overdue = v.nextDue && new Date(v.nextDue) < new Date();
           return (

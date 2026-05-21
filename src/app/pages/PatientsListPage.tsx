@@ -1,40 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { patients, encounters } from '../data/mock-data';
+import { patients as mockPatients } from '../data/mock-data';
 import { Search, QrCode, Plus } from 'lucide-react';
 import { ResponsiveTable, type TableColumn } from '../components/ui/responsive-table';
-
-type Patient = (typeof patients)[number];
+import { listPatients, type Patient } from '../services/api';
 
 export function PatientsListPage() {
+  const [allPatients, setAllPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
-  const filtered = patients.filter(p =>
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await listPatients();
+        if (!cancelled) setAllPatients(res.patients);
+      } catch {
+        if (!cancelled) {
+          setAllPatients(mockPatients.map(p => ({
+            id: p.id, firstName: p.firstName, lastName: p.lastName,
+            dob: p.dob, phone: p.phone, nationalId: p.nationalId,
+            bloodType: p.bloodType, allergies: p.allergies,
+            insuranceScheme: p.insuranceScheme, createdAt: 0,
+          })));
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const filtered = allPatients.filter(p =>
     `${p.firstName} ${p.lastName} ${p.phone} ${p.nationalId} ${p.id}`.toLowerCase().includes(query.toLowerCase())
   );
 
-  const lastVisit = (id: string) => {
-    const lastEnc = encounters.filter(e => e.patientId === id).sort((a, b) => b.date.localeCompare(a.date))[0];
-    return lastEnc?.date ?? '—';
-  };
-
   const columns: TableColumn<Patient>[] = [
     {
-      key: 'patient',
-      header: 'Patient',
+      key: 'patient', header: 'Patient',
       cell: p => (
         <Link to={`/patients/${p.id}`} className="af-focus flex items-center gap-3" onClick={e => e.stopPropagation()}>
           <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 text-[13px] shrink-0">
-            {p.firstName[0]}
-            {p.lastName[0]}
+            {p.firstName[0]}{p.lastName[0]}
           </div>
           <div className="min-w-0">
-            <p className="text-[14px] text-purple-600 hover:underline truncate">
-              {p.firstName} {p.lastName}
-            </p>
-            <p className="text-[11px] text-gray-400">
-              {p.gender === 'M' ? 'Male' : 'Female'} • {p.dob}
-            </p>
+            <p className="text-[14px] text-purple-600 hover:underline truncate">{p.firstName} {p.lastName}</p>
+            <p className="text-[11px] text-gray-400">DOB: {p.dob}</p>
           </div>
         </Link>
       ),
@@ -42,31 +56,17 @@ export function PatientsListPage() {
     { key: 'id', header: 'ID', cell: p => <span className="text-[13px] text-gray-600">{p.nationalId}</span>, hideOnMobile: true },
     { key: 'phone', header: 'Phone', cell: p => <span className="text-[13px] text-gray-600">{p.phone}</span> },
     {
-      key: 'ins',
-      header: 'Insurance',
-      cell: p => <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded-full text-[12px]">{p.insuranceScheme}</span>,
+      key: 'ins', header: 'Insurance',
+      cell: p => p.insuranceScheme
+        ? <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded-full text-[12px]">{p.insuranceScheme}</span>
+        : <span className="text-gray-400 text-[12px]">—</span>,
       hideOnMobile: true,
     },
     {
-      key: 'last',
-      header: 'Last Visit',
-      cell: p => <span className="text-[12px] text-gray-500">{lastVisit(p.id)}</span>,
-    },
-    {
-      key: 'allergies',
-      header: 'Allergies',
-      cell: p =>
-        p.allergies.length ? (
-          <div className="flex flex-wrap gap-1">
-            {p.allergies.map(a => (
-              <span key={a} className="bg-red-50 text-red-600 px-2 py-0.5 rounded-full text-[12px]">
-                {a}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <span className="text-gray-400 text-[12px]">None</span>
-        ),
+      key: 'allergies', header: 'Allergies',
+      cell: p => p.allergies.length
+        ? <div className="flex flex-wrap gap-1">{p.allergies.map(a => <span key={a} className="bg-red-50 text-red-600 px-2 py-0.5 rounded-full text-[12px]">{a}</span>)}</div>
+        : <span className="text-gray-400 text-[12px]">None</span>,
     },
   ];
 
@@ -97,10 +97,10 @@ export function PatientsListPage() {
         columns={columns}
         rows={filtered}
         rowKey={p => p.id}
-        emptyLabel="No matching patients"
+        emptyLabel={loading ? 'Loading patients…' : 'No matching patients'}
         onRowClick={p => navigate(`/patients/${p.id}`)}
         mobileTitle={p => `${p.firstName} ${p.lastName}`}
-        mobileSubtitle={p => `${p.phone} · ${p.insuranceScheme}`}
+        mobileSubtitle={p => `${p.phone}${p.insuranceScheme ? ' · ' + p.insuranceScheme : ''}`}
       />
     </div>
   );

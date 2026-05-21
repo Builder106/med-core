@@ -1,30 +1,150 @@
 import { useParams, Link } from 'react-router';
-import { patients, encounters, prescriptions, labResults, vaccinations } from '../data/mock-data';
+import { patients as mockPatients, encounters as mockEncounters, prescriptions as mockPrescriptions, labResults as mockLabs, vaccinations as mockVax } from '../data/mock-data';
 import { QRCodeSVG } from 'qrcode.react';
-import { ArrowLeft, Pill, FlaskConical, Syringe, Bot, AlertTriangle, Clock } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Pill, FlaskConical, Syringe, Bot, AlertTriangle, Clock, BadgeCheck, ShieldCheck, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import type { ComponentType } from 'react';
 import { ResponsiveTable, type TableColumn } from '../components/ui/responsive-table';
+import {
+  getPatient, listEncounters, listPrescriptions, listLabs, listVaccinations,
+  verifyNationalId, checkInsuranceEligibility,
+  type RegistryVerifyResult, type InsuranceEligibilityResult,
+} from '../services/api';
 
 type Tab = 'timeline' | 'prescriptions' | 'labs' | 'vaccinations';
 
+interface DisplayPatient {
+  id: string; firstName: string; lastName: string; dob: string;
+  phone: string; nationalId: string; bloodType?: string | null;
+  allergies: string[]; insuranceScheme?: string | null; gender?: string;
+}
+interface DisplayEncounter {
+  id: string; type: string; date: string; facilityName: string;
+  diagnosis: string; notes: string; doctorName: string;
+  vitals?: Record<string, string>;
+}
+interface DisplayRx {
+  id: string; status: string; date: string; doctorName: string;
+  medications: { name: string; dosage: string; frequency: string; duration: string; interactions?: string[] }[];
+}
+interface DisplayLab {
+  id: string; date: string; testName: string; result: string;
+  referenceRange?: string; status: string; labName?: string;
+}
+interface DisplayVax {
+  id: string; vaccine: string; dose: string; date: string;
+  site?: string; batchNumber?: string; nextDue?: string;
+}
+
 export function PatientDetailPage() {
   const { id } = useParams();
-  const patient = patients.find(p => p.id === id);
+  const [patient, setPatient] = useState<DisplayPatient | null>(null);
+  const [encounters, setEncounters] = useState<DisplayEncounter[]>([]);
+  const [prescriptions, setPrescriptions] = useState<DisplayRx[]>([]);
+  const [labs, setLabs] = useState<DisplayLab[]>([]);
+  const [vaccinations, setVaccinations] = useState<DisplayVax[]>([]);
+  const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('timeline');
+  const [registry, setRegistry] = useState<RegistryVerifyResult | null>(null);
+  const [insurance, setInsurance] = useState<InsuranceEligibilityResult | null>(null);
+  const [verifyingRegistry, setVerifyingRegistry] = useState(false);
+  const [verifyingInsurance, setVerifyingInsurance] = useState(false);
 
+  async function handleVerifyRegistry() {
+    if (!id) return;
+    setVerifyingRegistry(true);
+    try { setRegistry(await verifyNationalId({ patientId: id })); }
+    finally { setVerifyingRegistry(false); }
+  }
+
+  async function handleCheckInsurance() {
+    if (!id) return;
+    setVerifyingInsurance(true);
+    try { setInsurance(await checkInsuranceEligibility({ patientId: id })); }
+    finally { setVerifyingInsurance(false); }
+  }
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const [p, enc, rx, lb, vx] = await Promise.all([
+          getPatient(id),
+          listEncounters(id),
+          listPrescriptions(id),
+          listLabs(id),
+          listVaccinations(id),
+        ]);
+        if (cancelled) return;
+        setPatient(p.patient);
+        setEncounters(enc.encounters.map(e => ({
+          id: e.id,
+          type: e.type,
+          date: new Date(e.encounterDate).toISOString().slice(0, 10),
+          facilityName: 'MedCore Clinic',
+          diagnosis: e.diagnosis ?? e.chiefComplaint ?? '—',
+          notes: e.notes ?? '',
+          doctorName: e.doctorId,
+        })).sort((a, b) => b.date.localeCompare(a.date)));
+        setPrescriptions(rx.prescriptions.map(r => ({
+          id: r.id,
+          status: r.status,
+          date: new Date(r.createdAt).toISOString().slice(0, 10),
+          doctorName: r.doctorId,
+          medications: [{ name: r.drugName, dosage: r.dosage, frequency: r.frequency, duration: r.duration ?? '' }],
+        })));
+        setLabs(lb.labs.map(l => ({
+          id: l.id,
+          date: new Date(l.collectedAt).toISOString().slice(0, 10),
+          testName: l.testName,
+          result: `${l.value}${l.unit ? ' ' + l.unit : ''}`,
+          referenceRange: l.referenceRange ?? undefined,
+          status: l.status,
+        })));
+        setVaccinations(vx.vaccinations.map(v => ({
+          id: v.id,
+          vaccine: v.vaccineName,
+          dose: `Dose ${v.doseNumber}`,
+          date: new Date(v.administeredAt).toISOString().slice(0, 10),
+          site: v.site ?? undefined,
+          batchNumber: v.batch ?? undefined,
+          nextDue: v.nextDueAt ? new Date(v.nextDueAt).toISOString().slice(0, 10) : undefined,
+        })));
+      } catch {
+        if (cancelled) return;
+        const mp = mockPatients.find(p => p.id === id);
+        if (!mp) return;
+        setPatient(mp);
+        setEncounters(mockEncounters.filter(e => e.patientId === id).sort((a, b) => b.date.localeCompare(a.date)));
+        setPrescriptions(mockPrescriptions.filter(r => r.patientId === id).map(r => ({
+          id: r.id, status: r.status, date: r.date, doctorName: r.doctorName,
+          medications: r.medications,
+        })));
+        setLabs(mockLabs.filter(l => l.patientId === id).map(l => ({
+          id: l.id, date: l.date, testName: l.testName, result: l.result,
+          referenceRange: l.referenceRange, status: l.status, labName: l.labName,
+        })));
+        setVaccinations(mockVax.filter(v => v.patientId === id).map(v => ({
+          id: v.id, vaccine: v.vaccine, dose: v.dose, date: v.date,
+          site: v.site, batchNumber: v.batchNumber, nextDue: v.nextDue,
+        })));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  if (loading) return <div className="text-center py-12 text-gray-500">Loading patient…</div>;
   if (!patient) return <div className="text-center py-12 text-gray-500">Patient not found</div>;
 
-  const patEncounters = encounters.filter(e => e.patientId === id).sort((a, b) => b.date.localeCompare(a.date));
-  const patRx = prescriptions.filter(p => p.patientId === id);
-  const patLabs = labResults.filter(l => l.patientId === id);
-  const patVax = vaccinations.filter(v => v.patientId === id);
-
   const tabs: { key: Tab; label: string; icon: ComponentType<{ className?: string }>; count: number }[] = [
-    { key: 'timeline', label: 'Timeline', icon: Clock, count: patEncounters.length },
-    { key: 'prescriptions', label: 'Prescriptions', icon: Pill, count: patRx.length },
-    { key: 'labs', label: 'Lab Results', icon: FlaskConical, count: patLabs.length },
-    { key: 'vaccinations', label: 'Vaccinations', icon: Syringe, count: patVax.length },
+    { key: 'timeline', label: 'Timeline', icon: Clock, count: encounters.length },
+    { key: 'prescriptions', label: 'Prescriptions', icon: Pill, count: prescriptions.length },
+    { key: 'labs', label: 'Lab Results', icon: FlaskConical, count: labs.length },
+    { key: 'vaccinations', label: 'Vaccinations', icon: Syringe, count: vaccinations.length },
   ];
 
   return (
@@ -33,7 +153,6 @@ export function PatientDetailPage() {
         <ArrowLeft className="w-4 h-4" /> Back to patients
       </Link>
 
-      {/* Header */}
       <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col sm:flex-row gap-5">
         <div className="flex items-center gap-4 flex-1">
           <div className="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center text-white text-[20px] shrink-0">
@@ -41,13 +160,46 @@ export function PatientDetailPage() {
           </div>
           <div>
             <h1 className="text-[20px]">{patient.firstName} {patient.lastName}</h1>
-            <p className="text-[13px] text-gray-500">{patient.id} • {patient.nationalId} • {patient.gender === 'M' ? 'Male' : 'Female'} • DOB: {patient.dob}</p>
+            <p className="text-[13px] text-gray-500">
+              {patient.id} • {patient.nationalId}{patient.gender ? ` • ${patient.gender === 'M' ? 'Male' : 'Female'}` : ''} • DOB: {patient.dob}
+            </p>
             <div className="flex flex-wrap gap-2 mt-2">
-              <span className="text-[11px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{patient.bloodType}</span>
-              <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{patient.insuranceScheme}</span>
+              {patient.bloodType && <span className="text-[11px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{patient.bloodType}</span>}
+              {patient.insuranceScheme && <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{patient.insuranceScheme}</span>}
               {patient.allergies.map(a => (
                 <span key={a} className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full flex items-center gap-1"><AlertTriangle className="w-3 h-3" />{a}</span>
               ))}
+              {registry && (
+                <span className={`text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 ${registry.verified ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                  <BadgeCheck className="w-3 h-3" />
+                  {registry.verified ? `Registry verified${registry.matchedName ? ` · ${registry.matchedName}` : ''}` : `Registry: ${registry.status.replace('_', ' ')}`}
+                </span>
+              )}
+              {insurance && (
+                <span className={`text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 ${insurance.eligible ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}`}>
+                  <ShieldCheck className="w-3 h-3" />
+                  {insurance.scheme} · {insurance.status}
+                  {insurance.validThrough ? ` · valid thru ${insurance.validThrough}` : ''}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <button
+                onClick={handleVerifyRegistry}
+                disabled={verifyingRegistry}
+                className="text-[11px] px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-60 flex items-center gap-1"
+              >
+                {verifyingRegistry ? <Loader2 className="w-3 h-3 animate-spin" /> : <BadgeCheck className="w-3 h-3" />}
+                Verify with registry
+              </button>
+              <button
+                onClick={handleCheckInsurance}
+                disabled={verifyingInsurance}
+                className="text-[11px] px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-60 flex items-center gap-1"
+              >
+                {verifyingInsurance ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
+                Check insurance eligibility
+              </button>
             </div>
           </div>
         </div>
@@ -61,7 +213,6 @@ export function PatientDetailPage() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
         {tabs.map(tb => (
           <button
@@ -74,12 +225,11 @@ export function PatientDetailPage() {
         ))}
       </div>
 
-      {/* Tab Content */}
       {tab === 'timeline' && (
         <div className="relative pl-6">
           <div className="absolute left-2.5 top-0 bottom-0 w-px bg-purple-200" />
           <div className="space-y-4">
-            {patEncounters.map(enc => (
+            {encounters.map(enc => (
               <div key={enc.id} className="relative">
                 <div className={`absolute -left-[14px] top-4 w-3 h-3 rounded-full border-2 border-white ${enc.type === 'emergency' ? 'bg-red-500' : enc.type === 'lab' ? 'bg-blue-500' : enc.type === 'vaccination' ? 'bg-green-500' : 'bg-purple-500'}`} />
                 <div className="bg-white rounded-xl border border-gray-200 p-4 ml-2">
@@ -103,13 +253,14 @@ export function PatientDetailPage() {
                 </div>
               </div>
             ))}
+            {encounters.length === 0 && <p className="text-[13px] text-gray-400">No encounters recorded.</p>}
           </div>
         </div>
       )}
 
       {tab === 'prescriptions' && (
         <div className="space-y-4">
-          {patRx.map(rx => (
+          {prescriptions.map(rx => (
             <div key={rx.id} className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="flex items-center justify-between mb-3">
                 <div>
@@ -124,8 +275,8 @@ export function PatientDetailPage() {
                     <Pill className="w-4 h-4 text-purple-500 mt-0.5" />
                     <div>
                       <p className="text-[14px]">{med.name} {med.dosage}</p>
-                      <p className="text-[12px] text-gray-500">{med.frequency} • {med.duration}</p>
-                      {med.interactions && med.interactions.map(int => (
+                      <p className="text-[12px] text-gray-500">{med.frequency}{med.duration ? ` • ${med.duration}` : ''}</p>
+                      {med.interactions?.map(int => (
                         <p key={int} className="text-[11px] text-amber-600 mt-1 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> {int}</p>
                       ))}
                     </div>
@@ -134,6 +285,7 @@ export function PatientDetailPage() {
               </div>
             </div>
           ))}
+          {prescriptions.length === 0 && <p className="text-[13px] text-gray-400">No prescriptions recorded.</p>}
         </div>
       )}
 
@@ -143,27 +295,18 @@ export function PatientDetailPage() {
             { key: 'date', header: 'Date', cell: l => l.date },
             { key: 'test', header: 'Test', cell: l => l.testName },
             { key: 'result', header: 'Result', cell: l => l.result },
-            { key: 'ref', header: 'Reference', cell: l => l.referenceRange, hideOnMobile: true },
+            { key: 'ref', header: 'Reference', cell: l => l.referenceRange ?? '—', hideOnMobile: true },
             {
-              key: 'status',
-              header: 'Status',
+              key: 'status', header: 'Status',
               cell: l => (
-                <span
-                  className={`text-[11px] px-2 py-0.5 rounded-full ${
-                    l.status === 'critical'
-                      ? 'bg-red-100 text-red-700'
-                      : l.status === 'abnormal'
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-green-100 text-green-700'
-                  }`}
-                >
+                <span className={`text-[11px] px-2 py-0.5 rounded-full ${l.status === 'critical' ? 'bg-red-100 text-red-700' : l.status === 'abnormal' || l.status === 'high' || l.status === 'low' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
                   {l.status}
                 </span>
               ),
             },
-            { key: 'lab', header: 'Lab', cell: l => l.labName, hideOnMobile: true },
-          ] as TableColumn<(typeof patLabs)[number]>[])}
-          rows={patLabs}
+            { key: 'lab', header: 'Lab', cell: l => l.labName ?? '—', hideOnMobile: true },
+          ] as TableColumn<DisplayLab>[])}
+          rows={labs}
           rowKey={l => l.id}
           emptyLabel="No lab results"
           mobileTitle={l => l.testName}
@@ -173,12 +316,12 @@ export function PatientDetailPage() {
 
       {tab === 'vaccinations' && (
         <div className="space-y-3">
-          {patVax.map(v => (
+          {vaccinations.map(v => (
             <div key={v.id} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center"><Syringe className="w-5 h-5 text-green-600" /></div>
               <div className="flex-1">
                 <p className="text-[14px]">{v.vaccine} — {v.dose}</p>
-                <p className="text-[12px] text-gray-500">{v.date} • {v.site} • Batch: {v.batchNumber}</p>
+                <p className="text-[12px] text-gray-500">{v.date}{v.site ? ` • ${v.site}` : ''}{v.batchNumber ? ` • Batch: ${v.batchNumber}` : ''}</p>
               </div>
               {v.nextDue && (
                 <span className={`text-[11px] px-2 py-1 rounded-full ${new Date(v.nextDue) < new Date() ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
@@ -187,6 +330,7 @@ export function PatientDetailPage() {
               )}
             </div>
           ))}
+          {vaccinations.length === 0 && <p className="text-[13px] text-gray-400">No vaccinations recorded.</p>}
         </div>
       )}
     </div>

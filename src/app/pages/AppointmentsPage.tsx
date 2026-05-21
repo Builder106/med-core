@@ -1,17 +1,79 @@
-import { appointments, patients } from '../data/mock-data';
+import { useEffect, useState } from 'react';
+import { appointments as mockAppointments, patients as mockPatients } from '../data/mock-data';
 import { useApp } from '../context/AppContext';
 import { Calendar, Clock, Plus, MapPin } from 'lucide-react';
-import { useState } from 'react';
+import { listAppointments, listPatientAppointments, type Appointment } from '../services/api';
+
+interface Row {
+  id: string;
+  patientId: string;
+  type: string;
+  status: string;
+  date: string;
+  time: string;
+  facilityName: string;
+  doctorName: string;
+  estimatedWait?: number;
+}
+
+function mapAppointment(a: Appointment): Row {
+  const d = new Date(a.scheduledFor);
+  return {
+    id: a.id,
+    patientId: a.patientId,
+    type: a.reason ?? 'Consultation',
+    status: a.status === 'no_show' ? 'cancelled' : a.status === 'checked_in' ? 'scheduled' : a.status,
+    date: d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }),
+    time: d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
+    facilityName: a.facilityId ?? 'MedCore Clinic',
+    doctorName: a.doctorId,
+  };
+}
 
 export function AppointmentsPage() {
-  const { role, currentPatientId } = useApp();
+  const { role, currentPatientId, currentUserId } = useApp();
   const [filter, setFilter] = useState<'all' | 'scheduled' | 'completed'>('all');
+  const [rows, setRows] = useState<Row[]>([]);
+  const [apiOk, setApiOk] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const appts = role === 'patient'
-    ? appointments.filter(a => a.patientId === currentPatientId)
-    : appointments;
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = role === 'patient'
+          ? await listPatientAppointments(currentPatientId)
+          : await listAppointments({ doctorId: role === 'doctor' ? currentUserId : undefined });
+        if (cancelled) return;
+        setRows(res.appointments.map(mapAppointment));
+        setApiOk(true);
+      } catch {
+        if (cancelled) return;
+        setApiOk(false);
+        const fallback = (role === 'patient'
+          ? mockAppointments.filter(a => a.patientId === currentPatientId)
+          : mockAppointments
+        ).map(a => ({
+          id: a.id,
+          patientId: a.patientId,
+          type: a.type,
+          status: a.status,
+          date: a.date,
+          time: a.time,
+          facilityName: a.facilityName,
+          doctorName: a.doctorName,
+          estimatedWait: a.estimatedWait,
+        }));
+        setRows(fallback);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [role, currentPatientId, currentUserId]);
 
-  const filtered = filter === 'all' ? appts : appts.filter(a => a.status === filter);
+  const filtered = filter === 'all' ? rows : rows.filter(a => a.status === filter);
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -22,6 +84,12 @@ export function AppointmentsPage() {
         </button>
       </div>
 
+      {!apiOk && (
+        <div className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          API unreachable — showing legacy demo data.
+        </div>
+      )}
+
       <div className="flex gap-2">
         {(['all', 'scheduled', 'completed'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
@@ -30,8 +98,10 @@ export function AppointmentsPage() {
       </div>
 
       <div className="space-y-3">
+        {loading && <p className="text-[13px] text-gray-500">Loading appointments…</p>}
+        {!loading && filtered.length === 0 && <p className="text-[13px] text-gray-500">No appointments.</p>}
         {filtered.map(apt => {
-          const patient = patients.find(p => p.id === apt.patientId);
+          const patient = mockPatients.find(p => p.id === apt.patientId);
           return (
             <div key={apt.id} className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${apt.status === 'completed' ? 'bg-green-100' : apt.status === 'cancelled' ? 'bg-red-100' : 'bg-blue-100'}`}>

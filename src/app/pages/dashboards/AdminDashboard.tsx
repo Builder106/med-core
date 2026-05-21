@@ -1,31 +1,70 @@
-import { dailyStats, facilities, inventory } from '../../data/mock-data';
+import { useState, useEffect } from 'react';
+import { dailyStats as mockDailyStats, facilities as mockFacilities, inventory as mockInventory } from '../../data/mock-data';
 import { Users, Calendar, AlertTriangle, TrendingUp, Package, ArrowRight, Activity, Shield, FileCheck2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { Link } from 'react-router';
+import { listInventory, getDailyStats, listFacilities, type InventoryItem, type DailyStats, type Facility } from '../../services/api';
 
 const COLORS = ['#0d9488', '#7c3aed', '#f59e0b', '#3b82f6', '#ef4444', '#10b981', '#6366f1', '#ec4899'];
 
+interface LowStockItem { id: string; name: string; quantity: number; reorderLevel: number; unit: string; linkedPrescriptions: number; }
+
 export function AdminDashboard() {
-  const facility = facilities[0];
-  const lowStock = inventory.filter(i => i.quantity <= i.reorderLevel);
+  const [facility, setFacility] = useState<Facility>(mockFacilities[0]);
+  const [stats, setStats] = useState<DailyStats>(mockDailyStats);
+  const [lowStock, setLowStock] = useState<LowStockItem[]>([]);
+  const [ministryReadiness, setMinistryReadiness] = useState(98);
+
   const occupancy = Math.round((facility.bedsOccupied / facility.beds) * 100);
-  const ministryReadiness = lowStock.length === 0 ? 98 : 86;
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [inv, daily, facs] = await Promise.all([
+          listInventory(),
+          getDailyStats(),
+          listFacilities(),
+        ]);
+        if (cancelled) return;
+        const ls = inv.items
+          .filter((i: InventoryItem) => i.quantity <= i.reorderLevel)
+          .map((i: InventoryItem) => ({
+            id: i.id, name: i.itemName, quantity: i.quantity,
+            reorderLevel: i.reorderLevel, unit: i.unit ?? 'each', linkedPrescriptions: 0,
+          }));
+        setLowStock(ls);
+        setMinistryReadiness(ls.length === 0 ? 98 : 86);
+        setStats(daily);
+        if (facs.facilities.length > 0) setFacility(facs.facilities[0]);
+      } catch {
+        if (cancelled) return;
+        const ls = mockInventory.filter(i => i.quantity <= i.reorderLevel).map(i => ({
+          id: i.id, name: i.name, quantity: i.quantity, reorderLevel: i.reorderLevel,
+          unit: i.unit, linkedPrescriptions: i.linkedPrescriptions,
+        }));
+        setLowStock(ls);
+        setMinistryReadiness(ls.length === 0 ? 98 : 86);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="space-y-6 max-w-7xl">
       <div className="af-elevate rounded-3xl border border-[#D9C8AE] bg-gradient-to-r from-[#F8F1E6] via-[#F6EFE4] to-[#E8F0FA] p-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-        <div>
-          <p className="text-[12px] uppercase tracking-[0.16em] text-[#5B5149]">Facility command center</p>
-          <h1 className="text-[30px] text-[#1F1B18]">{facility.name}</h1>
-          <p className="text-[13px] text-[#5B5149]">{facility.location} · {facility.level}</p>
+          <div>
+            <p className="text-[12px] uppercase tracking-[0.16em] text-[#5B5149]">Facility command center</p>
+            <h1 className="text-[30px] text-[#1F1B18]">{facility.name}</h1>
+            <p className="text-[13px] text-[#5B5149]">{facility.location} · {facility.level}</p>
+          </div>
+          <div className="flex gap-2">
+            <Link to="/reports" className="af-elevate af-press af-focus flex items-center gap-2 px-3 py-2 bg-[#B85C38] text-white rounded-lg hover:bg-[#9E4D2F] transition-colors text-[13px]">
+              Reports <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Link to="/reports" className="af-elevate af-press af-focus flex items-center gap-2 px-3 py-2 bg-[#B85C38] text-white rounded-lg hover:bg-[#9E4D2F] transition-colors text-[13px]">
-            Reports <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-      </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -59,11 +98,11 @@ export function AdminDashboard() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
-          { label: 'Patients', value: dailyStats.patientsToday, icon: Users, accent: 'text-amber-500' },
-          { label: 'Appointments', value: dailyStats.appointmentsToday, icon: Calendar, accent: 'text-blue-500' },
-          { label: 'Emergencies', value: dailyStats.emergencies, icon: AlertTriangle, accent: 'text-red-500' },
-          { label: 'Admissions', value: dailyStats.admissions, icon: TrendingUp, accent: 'text-emerald-500' },
-          { label: 'Discharges', value: dailyStats.discharges, icon: TrendingUp, accent: 'text-purple-500' },
+          { label: 'Patients', value: stats.patientsToday, icon: Users, accent: 'text-amber-500' },
+          { label: 'Appointments', value: stats.appointmentsToday, icon: Calendar, accent: 'text-blue-500' },
+          { label: 'Emergencies', value: stats.emergencies, icon: AlertTriangle, accent: 'text-red-500' },
+          { label: 'Admissions', value: stats.admissions, icon: TrendingUp, accent: 'text-emerald-500' },
+          { label: 'Discharges', value: stats.discharges, icon: TrendingUp, accent: 'text-purple-500' },
         ].map(s => (
           <div key={s.label} className="af-elevate bg-white rounded-xl border border-slate-200 p-4">
             <div className="flex items-center justify-between mb-3">
@@ -77,11 +116,10 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Weekly Trend — spans 2 cols */}
         <div className="af-elevate lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5">
           <h2 className="text-[14px] text-slate-500 uppercase tracking-wider mb-4">Weekly Patient Volume</h2>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={dailyStats.weeklyTrend}>
+            <BarChart data={stats.weeklyTrend}>
               <XAxis dataKey="day" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip trigger="click" wrapperStyle={{ pointerEvents: 'auto' }} />
@@ -90,7 +128,6 @@ export function AdminDashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Bed Occupancy */}
         <div className="af-elevate bg-white rounded-xl border border-slate-200 p-5">
           <h2 className="text-[14px] text-slate-500 uppercase tracking-wider mb-4">Bed Occupancy</h2>
           <div className="flex flex-col items-center">
@@ -106,30 +143,20 @@ export function AdminDashboard() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-4 w-full text-center">
-              <div>
-                <p className="text-[16px] text-slate-900">{facility.beds}</p>
-                <p className="text-[10px] text-slate-400">Total</p>
-              </div>
-              <div>
-                <p className="text-[16px] text-amber-600">{facility.bedsOccupied}</p>
-                <p className="text-[10px] text-slate-400">Used</p>
-              </div>
-              <div>
-                <p className="text-[16px] text-emerald-600">{facility.beds - facility.bedsOccupied}</p>
-                <p className="text-[10px] text-slate-400">Free</p>
-              </div>
+              <div><p className="text-[16px] text-slate-900">{facility.beds}</p><p className="text-[10px] text-slate-400">Total</p></div>
+              <div><p className="text-[16px] text-amber-600">{facility.bedsOccupied}</p><p className="text-[10px] text-slate-400">Used</p></div>
+              <div><p className="text-[16px] text-emerald-600">{facility.beds - facility.bedsOccupied}</p><p className="text-[10px] text-slate-400">Free</p></div>
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Top Diagnoses */}
         <div className="af-elevate bg-white rounded-xl border border-slate-200 p-5">
           <h2 className="text-[14px] text-slate-500 uppercase tracking-wider mb-4">Top Diagnoses</h2>
           <div className="space-y-2">
-            {dailyStats.topDiagnoses.slice(0, 6).map((d, i) => {
-              const maxCount = dailyStats.topDiagnoses[0].count;
+            {stats.topDiagnoses.slice(0, 6).map((d, i) => {
+              const maxCount = stats.topDiagnoses[0].count;
               return (
                 <div key={d.name} className="flex items-center gap-3">
                   <span className="text-[12px] text-slate-400 w-4 text-right">{i + 1}</span>
@@ -148,7 +175,6 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {/* Low Stock Alerts */}
         <div className="af-elevate bg-white rounded-xl border border-slate-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-[14px] text-slate-500 uppercase tracking-wider">Low Stock Alerts</h2>

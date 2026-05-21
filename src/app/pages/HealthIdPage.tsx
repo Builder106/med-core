@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { patients } from '../data/mock-data';
 import { useApp } from '../context/AppContext';
-import { Download, Share2, Shield, Fingerprint } from 'lucide-react';
+import { Download, Share2, Shield, Fingerprint, Check } from 'lucide-react';
 import { isLikelyUnreachableForQrScan, resolvePublicOrigin } from '../lib/publicOrigin';
+import { exportFhirBundle } from '../services/api';
 
 export function healthIdChartUrl(patientId: string, origin: string) {
   const path = `/patients/${encodeURIComponent(patientId)}?from=health-id`;
@@ -17,6 +18,8 @@ export function healthIdChartUrl(patientId: string, origin: string) {
 export function HealthIdPage() {
   const { currentPatientId } = useApp();
   const patient = patients.find(p => p.id === currentPatientId)!;
+  const [downloading, setDownloading] = useState(false);
+  const [copied, setCopied] = useState(false);
   const publicOrigin = useMemo(
     () =>
       resolvePublicOrigin(
@@ -26,6 +29,28 @@ export function HealthIdPage() {
     [],
   );
   const chartUrl = useMemo(() => healthIdChartUrl(patient.id, publicOrigin), [patient.id, publicOrigin]);
+
+  async function handleDownload() {
+    setDownloading(true);
+    try {
+      const json = await exportFhirBundle(patient.id);
+      const blob = new Blob([json], { type: 'application/fhir+json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `medcore-${patient.id}-fhir.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  async function handleShare() {
+    await navigator.clipboard.writeText(chartUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
   const qrWarn = typeof window !== 'undefined' && isLikelyUnreachableForQrScan(publicOrigin);
 
   return (
@@ -86,11 +111,12 @@ export function HealthIdPage() {
           </div>
 
           <div className="flex gap-3 mt-6 w-full">
-            <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-[13px]">
-              <Download className="w-4 h-4" /> Download
+            <button onClick={handleDownload} disabled={downloading} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-60 transition-colors text-[13px]">
+              <Download className="w-4 h-4" /> {downloading ? 'Exporting…' : 'FHIR Export'}
             </button>
-            <button className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-[13px]">
-              <Share2 className="w-4 h-4" /> Share
+            <button onClick={handleShare} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-[13px]">
+              {copied ? <Check className="w-4 h-4 text-teal-600" /> : <Share2 className="w-4 h-4" />}
+              {copied ? 'Copied!' : 'Copy link'}
             </button>
           </div>
         </div>

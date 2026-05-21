@@ -1,31 +1,95 @@
-import { appointments, encounters, labResults, patients, referrals, vaccinations } from '../../data/mock-data';
+import { appointments as mockAppointments, encounters as mockEncounters, labResults as mockLabResults, patients as mockPatients, referrals as mockReferrals, vaccinations as mockVaccinations } from '../../data/mock-data';
 import { AlertTriangle, ArrowRight, ArrowRightLeft, Bot, CalendarClock, ClipboardList, Clock3, QrCode, Search, Shield, Sparkles, Stethoscope, Syringe, TestTube2, TriangleAlert, UserRoundSearch } from 'lucide-react';
 import { Link } from 'react-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { listPatients, listAppointments, listReferrals, listCriticalLabs, listOverdueVaccinations, listRecentEncounters, type Patient, type Appointment, type Referral, type Encounter } from '../../services/api';
+
+interface DisplayAppt {
+  id: string; patientId: string; time: string; type: string; estimatedWait: number;
+}
+interface DisplayRef {
+  id: string; patientId: string; reason: string; urgency: string; toFacility: string;
+}
+
+function apptToDisplay(a: Appointment): DisplayAppt {
+  const d = new Date(a.scheduledFor);
+  return {
+    id: a.id, patientId: a.patientId,
+    time: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    type: a.reason ?? 'Consultation',
+    estimatedWait: 0,
+  };
+}
+
+function refToDisplay(r: Referral): DisplayRef {
+  return {
+    id: r.id, patientId: r.patientId, reason: r.reason,
+    urgency: r.urgency, toFacility: r.toFacility ?? '—',
+  };
+}
 
 export function DoctorDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
-  const todayAppts = appointments.filter(a => a.status === 'scheduled').sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`));
-  const pendingRefs = referrals.filter(r => r.status === 'pending');
-  const urgentRefs = referrals.filter(r => r.urgency !== 'routine');
-  const criticalLabs = labResults.filter(r => r.status === 'critical');
-  const overdueVaccines = vaccinations.filter(v => v.nextDue && new Date(v.nextDue) < new Date());
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [appts, setAppts] = useState<DisplayAppt[]>([]);
+  const [refs, setRefs] = useState<DisplayRef[]>([]);
+  const [criticalLabCount, setCriticalLabCount] = useState(0);
+  const [overdueVaxCount, setOverdueVaxCount] = useState(0);
+  const [timeline, setTimeline] = useState<Encounter[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [pl, al, rl, cl, ov, tl] = await Promise.all([
+          listPatients(),
+          listAppointments(),
+          listReferrals(),
+          listCriticalLabs(),
+          listOverdueVaccinations(),
+          listRecentEncounters(5),
+        ]);
+        if (cancelled) return;
+        setPatients(pl.patients);
+        setAppts(al.appointments.filter(a => a.status === 'scheduled').map(apptToDisplay));
+        setRefs(rl.referrals.map(refToDisplay));
+        setCriticalLabCount(cl.labs.length);
+        setOverdueVaxCount(ov.vaccinations.length);
+        setTimeline(tl.encounters);
+      } catch {
+        if (cancelled) return;
+        setPatients(mockPatients.map(p => ({
+          id: p.id, firstName: p.firstName, lastName: p.lastName, dob: p.dob,
+          phone: p.phone, nationalId: p.nationalId, bloodType: p.bloodType,
+          allergies: p.allergies, insuranceScheme: p.insuranceScheme, createdAt: 0,
+        })));
+        setAppts(mockAppointments.filter(a => a.status === 'scheduled').map(a => ({
+          id: a.id, patientId: a.patientId, time: a.time, type: a.type, estimatedWait: a.estimatedWait ?? 0,
+        })));
+        setRefs(mockReferrals.filter(r => r.status === 'pending').map(r => ({
+          id: r.id, patientId: r.patientId, reason: r.reason, urgency: r.urgency, toFacility: r.toFacility,
+        })));
+        setCriticalLabCount(mockLabResults.filter(r => r.status === 'critical').length);
+        setOverdueVaxCount(mockVaccinations.filter(v => v.nextDue && new Date(v.nextDue) < new Date()).length);
+        setTimeline(mockEncounters.slice().sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map(e => ({
+          id: e.id, patientId: e.patientId, doctorId: '', encounterDate: new Date(e.date).getTime(),
+          type: e.type as Encounter['type'], diagnosis: e.diagnosis, notes: e.notes, createdAt: 0,
+        })));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const pendingRefs = refs.filter(r => r.urgency !== 'routine');
   const highRiskSignals = [
-    `${criticalLabs.length} critical lab result${criticalLabs.length === 1 ? '' : 's'} require callback`,
-    `${pendingRefs.length} referral${pendingRefs.length === 1 ? '' : 's'} awaiting acceptance`,
-    `${overdueVaccines.length} overdue vaccination follow-up${overdueVaccines.length === 1 ? '' : 's'}`,
+    `${criticalLabCount} critical lab result${criticalLabCount === 1 ? '' : 's'} require callback`,
+    `${refs.length} referral${refs.length === 1 ? '' : 's'} awaiting acceptance`,
+    `${overdueVaxCount} overdue vaccination follow-up${overdueVaxCount === 1 ? '' : 's'}`,
   ];
-  const timeline = encounters
-    .slice()
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 5);
 
   const searchResults = searchQuery.length > 1
     ? patients.filter(p =>
-      `${p.firstName} ${p.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.phone.includes(searchQuery) ||
-      p.nationalId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.id.toLowerCase().includes(searchQuery.toLowerCase())
+      `${p.firstName} ${p.lastName} ${p.phone} ${p.nationalId} ${p.id}`.toLowerCase().includes(searchQuery.toLowerCase())
     )
     : [];
 
@@ -41,15 +105,15 @@ export function DoctorDashboard() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div className="af-elevate rounded-2xl bg-white border border-[#D9C8AE] px-3 py-2">
               <p className="text-[11px] text-[#5B5149] uppercase">Queue</p>
-              <p className="text-[21px] text-[#1F1B18]">{todayAppts.length}</p>
+              <p className="text-[21px] text-[#1F1B18]">{appts.length}</p>
             </div>
             <div className="af-elevate rounded-2xl bg-white border border-[#D9C8AE] px-3 py-2">
               <p className="text-[11px] text-[#5B5149] uppercase">Critical Labs</p>
-              <p className="text-[21px] text-[#A63D32]">{criticalLabs.length}</p>
+              <p className="text-[21px] text-[#A63D32]">{criticalLabCount}</p>
             </div>
             <div className="af-elevate rounded-2xl bg-white border border-[#D9C8AE] px-3 py-2">
               <p className="text-[11px] text-[#5B5149] uppercase">Referrals</p>
-              <p className="text-[21px] text-[#3D4C8A]">{pendingRefs.length}</p>
+              <p className="text-[21px] text-[#3D4C8A]">{refs.length}</p>
             </div>
             <div className="af-elevate rounded-2xl bg-white border border-[#D9C8AE] px-3 py-2">
               <p className="text-[11px] text-[#5B5149] uppercase">AI Flags</p>
@@ -83,7 +147,7 @@ export function DoctorDashboard() {
                 <Search className="w-5 h-5 text-[#5B5149]" />
                 <input
                   type="text"
-                  placeholder="Search by name, phone, national ID, or scan QR..."
+                  placeholder="Search by name, phone, national ID…"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="af-focus flex-1 bg-transparent outline-none text-[14px]"
@@ -120,7 +184,7 @@ export function DoctorDashboard() {
               </Link>
             </div>
             <div className="divide-y divide-[#EFE4D1]">
-              {todayAppts.slice(0, 6).map((apt, i) => {
+              {appts.slice(0, 6).map((apt, i) => {
                 const patient = patients.find(p => p.id === apt.patientId);
                 const isNext = i === 0;
                 return (
@@ -136,16 +200,15 @@ export function DoctorDashboard() {
                       <p className="text-[12px] text-[#5B5149]">{apt.type}</p>
                     </div>
                     <div className="flex items-center gap-1 text-[12px] text-[#5B5149] shrink-0">
-                      <Clock3 className="w-3 h-3" /> ~{apt.estimatedWait || 0}m
+                      <Clock3 className="w-3 h-3" /> ~{apt.estimatedWait}m
                     </div>
-                    {isNext ? (
-                      <span className="text-[11px] bg-violet-600 text-white px-2.5 py-1 rounded-full shrink-0">Next</span>
-                    ) : (
-                      <span className="text-[11px] text-[#5B5149] bg-[#EFE4D1] px-2.5 py-1 rounded-full shrink-0">Waiting</span>
-                    )}
+                    {isNext
+                      ? <span className="text-[11px] bg-violet-600 text-white px-2.5 py-1 rounded-full shrink-0">Next</span>
+                      : <span className="text-[11px] text-[#5B5149] bg-[#EFE4D1] px-2.5 py-1 rounded-full shrink-0">Waiting</span>}
                   </div>
                 );
               })}
+              {appts.length === 0 && <p className="px-5 py-4 text-[13px] text-[#5B5149]">No appointments scheduled.</p>}
             </div>
           </div>
 
@@ -161,10 +224,10 @@ export function DoctorDashboard() {
               {timeline.map(item => (
                 <div key={item.id} className="af-elevate rounded-xl border border-[#EFE4D1] px-3 py-2 bg-[#FCFAF6]">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[13px] text-[#1F1B18]">{item.diagnosis}</p>
+                    <p className="text-[13px] text-[#1F1B18]">{item.diagnosis ?? item.chiefComplaint ?? '—'}</p>
                     <span className="text-[10px] uppercase tracking-wide text-[#5B5149]">{item.type}</span>
                   </div>
-                  <p className="text-[11px] text-[#5B5149] mt-1">{item.patientId} · {item.facilityName} · {item.date}</p>
+                  <p className="text-[11px] text-[#5B5149] mt-1">{item.patientId} · {new Date(item.encounterDate).toISOString().slice(0, 10)}</p>
                 </div>
               ))}
             </div>
@@ -194,8 +257,8 @@ export function DoctorDashboard() {
               Referral Tracker
             </h3>
             <div className="mt-3 space-y-2">
-              {urgentRefs.map(ref => {
-                const p = patients.find(patient => patient.id === ref.patientId);
+              {pendingRefs.slice(0, 4).map(ref => {
+                const p = patients.find(pt => pt.id === ref.patientId);
                 return (
                   <div key={ref.id} className="af-elevate rounded-xl border border-[#EFE4D1] p-3 bg-[#FDFBF6]">
                     <p className="text-[13px] text-[#1F1B18]">{p ? `${p.firstName} ${p.lastName}` : ref.patientId}</p>
@@ -207,6 +270,7 @@ export function DoctorDashboard() {
                   </div>
                 );
               })}
+              {pendingRefs.length === 0 && <p className="text-[12px] text-[#5B5149]">No urgent referrals.</p>}
             </div>
           </div>
 
@@ -229,12 +293,6 @@ export function DoctorDashboard() {
         <span className="px-2.5 py-1 rounded-full bg-teal-100 text-teal-700 border border-teal-200">Patient actions</span>
         <span className="px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 border border-violet-200">Clinical tools</span>
         <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200">AI suggestions</span>
-      </div>
-
-      <div className="hidden">
-        <div>
-          FHIR sync
-        </div>
       </div>
     </div>
   );
