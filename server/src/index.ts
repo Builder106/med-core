@@ -6,9 +6,12 @@ import { eq, lte, and } from 'drizzle-orm';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { env } from './lib/env.js';
+import { logger } from './lib/logger.js';
 import { getDb, schema } from './db/index.js';
 import { seedDemoData } from './db/seed.js';
 import { sessionMiddleware, requireApiSession } from './middleware/session.js';
+import { auditMiddleware } from './middleware/audit.js';
+import { rateLimit } from './middleware/rate-limit.js';
 import { healthRouter } from './routes/health.js';
 import { authRouter } from './routes/auth.js';
 import { interactionsRouter } from './routes/interactions.js';
@@ -18,6 +21,20 @@ import { remindersRouter } from './routes/reminders.js';
 import { voiceRouter, purgeExpiredAudio } from './routes/voice.js';
 import { videoRouter } from './routes/video.js';
 import { patientsRouter } from './routes/patients.js';
+import { aiRouter } from './routes/ai.js';
+import { appointmentsRouter } from './routes/appointments.js';
+import { labsRouter } from './routes/labs.js';
+import { vaccinationsRouter } from './routes/vaccinations.js';
+import { referralsRouter } from './routes/referrals.js';
+import { consentRouter } from './routes/consent.js';
+import { auditRouter } from './routes/audit.js';
+import { staffRouter } from './routes/staff.js';
+import { inventoryRouter } from './routes/inventory.js';
+import { encountersRouter } from './routes/encounters.js';
+import { statsRouter } from './routes/stats.js';
+import { facilitiesRouter } from './routes/facilities.js';
+import { fhirRouter } from './routes/fhir.js';
+import { integrationsRouter } from './routes/integrations.js';
 import { sms } from './lib/sms.js';
 import { sendPush } from './lib/push.js';
 
@@ -36,8 +53,16 @@ export async function createApp() {
   app.use(express.json({ limit: '5mb' }));
   app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
+  const isTest = process.env.NODE_ENV === 'test' || process.env.VITEST;
+  if (!isTest) {
+    app.use('/api', rateLimit({ windowMs: 60_000, max: 200 }));
+    app.use('/api/auth/login', rateLimit({ windowMs: 60_000, max: 10 }));
+    app.use('/api/sms/inbound', rateLimit({ windowMs: 60_000, max: 20 }));
+  }
+
   app.use('/api', sessionMiddleware);
   app.use('/api', requireApiSession);
+  app.use('/api', auditMiddleware);
   app.use('/api', healthRouter);
   app.use('/api', authRouter);
   app.use('/api', patientsRouter);
@@ -47,9 +72,23 @@ export async function createApp() {
   app.use('/api', remindersRouter);
   app.use('/api', voiceRouter);
   app.use('/api', videoRouter);
+  app.use('/api', aiRouter);
+  app.use('/api', appointmentsRouter);
+  app.use('/api', labsRouter);
+  app.use('/api', vaccinationsRouter);
+  app.use('/api', referralsRouter);
+  app.use('/api', consentRouter);
+  app.use('/api', auditRouter);
+  app.use('/api', staffRouter);
+  app.use('/api', inventoryRouter);
+  app.use('/api', encountersRouter);
+  app.use('/api', statsRouter);
+  app.use('/api', facilitiesRouter);
+  app.use('/api', fhirRouter);
+  app.use('/api', integrationsRouter);
 
-  app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    console.error('[api] error', err);
+  app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    logger.error('unhandled_error', { path: req.path, method: req.method, message: err.message });
     res.status(500).json({ error: 'internal_error' });
   });
 
@@ -99,17 +138,17 @@ if (isDirectEntry()) {
   try {
     const app = await createApp();
     app.listen(env.PORT, () => {
-      console.log(`[medcore-api] listening on http://localhost:${env.PORT}`);
+      logger.info('api_listening', { port: env.PORT, url: `http://localhost:${env.PORT}` });
     });
 
     cron.schedule('* * * * *', () => {
-      dispatchDueReminders().catch(err => console.error('[cron:reminders]', err));
+      dispatchDueReminders().catch(err => logger.error('cron_reminders_failed', { message: err?.message }));
     });
     cron.schedule('0 * * * *', () => {
-      purgeExpiredAudio().catch(err => console.error('[cron:audio]', err));
+      purgeExpiredAudio().catch(err => logger.error('cron_audio_failed', { message: err?.message }));
     });
   } catch (err) {
-    console.error('[medcore-api] failed to start', err);
+    logger.error('api_start_failed', { message: (err as Error)?.message });
     process.exit(1);
   }
 }

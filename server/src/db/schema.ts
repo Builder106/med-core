@@ -136,3 +136,122 @@ export const pushSubscriptions = sqliteTable('push_subscriptions', {
   auth: text('auth').notNull(),
   createdAt: integer('created_at').notNull(),
 });
+
+export const appointments = sqliteTable('appointments', {
+  id: text('id').primaryKey(),
+  patientId: text('patient_id').notNull(),
+  doctorId: text('doctor_id').notNull(),
+  facilityId: text('facility_id'),
+  scheduledFor: integer('scheduled_for').notNull(),
+  durationMin: integer('duration_min').notNull().default(20),
+  reason: text('reason'),
+  status: text('status', { enum: ['scheduled', 'checked_in', 'completed', 'cancelled', 'no_show'] }).notNull().default('scheduled'),
+  notes: text('notes'),
+  createdAt: integer('created_at').notNull(),
+});
+
+export const labResults = sqliteTable('lab_results', {
+  id: text('id').primaryKey(),
+  patientId: text('patient_id').notNull(),
+  doctorId: text('doctor_id'),
+  testName: text('test_name').notNull(),
+  value: text('value').notNull(),
+  unit: text('unit'),
+  referenceRange: text('reference_range'),
+  status: text('status', { enum: ['normal', 'high', 'low', 'critical'] }).notNull().default('normal'),
+  collectedAt: integer('collected_at').notNull(),
+  reviewedByDoctor: integer('reviewed_by_doctor').notNull().default(0),
+  plainEnglish: text('plain_english'),
+  createdAt: integer('created_at').notNull(),
+});
+
+export const vaccinations = sqliteTable('vaccinations', {
+  id: text('id').primaryKey(),
+  patientId: text('patient_id').notNull(),
+  vaccineName: text('vaccine_name').notNull(),
+  doseNumber: integer('dose_number').notNull().default(1),
+  batch: text('batch'),
+  site: text('site'),
+  administeredAt: integer('administered_at').notNull(),
+  nextDueAt: integer('next_due_at'),
+  administeredBy: text('administered_by'),
+  createdAt: integer('created_at').notNull(),
+});
+
+export const referrals = sqliteTable('referrals', {
+  id: text('id').primaryKey(),
+  patientId: text('patient_id').notNull(),
+  fromDoctorId: text('from_doctor_id').notNull(),
+  toDoctorId: text('to_doctor_id'),
+  toFacility: text('to_facility'),
+  specialty: text('specialty'),
+  urgency: text('urgency', { enum: ['routine', 'urgent', 'emergency'] }).notNull().default('routine'),
+  reason: text('reason').notNull(),
+  status: text('status', { enum: ['pending', 'accepted', 'completed', 'declined'] }).notNull().default('pending'),
+  createdAt: integer('created_at').notNull(),
+  respondedAt: integer('responded_at'),
+});
+
+export const consentGrants = sqliteTable('consent_grants', {
+  id: text('id').primaryKey(),
+  patientId: text('patient_id').notNull(),
+  grantedTo: text('granted_to').notNull(),
+  grantedToType: text('granted_to_type', { enum: ['doctor', 'facility'] }).notNull().default('doctor'),
+  sections: text('sections').notNull().default('[]'),
+  status: text('status', { enum: ['active', 'revoked'] }).notNull().default('active'),
+  grantedAt: integer('granted_at').notNull(),
+  revokedAt: integer('revoked_at'),
+  expiresAt: integer('expires_at'),
+});
+
+export const auditLog = sqliteTable('audit_log', {
+  id: text('id').primaryKey(),
+  userId: text('user_id'),
+  role: text('role'),
+  patientId: text('patient_id'),
+  action: text('action').notNull(),
+  path: text('path').notNull(),
+  method: text('method').notNull(),
+  status: integer('status').notNull(),
+  durationMs: integer('duration_ms').notNull().default(0),
+  ip: text('ip'),
+  createdAt: integer('created_at').notNull(),
+});
+
+export const staff = sqliteTable('staff', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  role: text('role').notNull(),
+  specialty: text('specialty'),
+  email: text('email'),
+  phone: text('phone'),
+  status: text('status', { enum: ['active', 'on_leave', 'inactive'] }).notNull().default('active'),
+  facilityId: text('facility_id'),
+  createdAt: integer('created_at').notNull(),
+});
+
+export const inventory = sqliteTable('inventory', {
+  id: text('id').primaryKey(),
+  itemName: text('item_name').notNull(),
+  category: text('category'),
+  sku: text('sku'),
+  quantity: integer('quantity').notNull().default(0),
+  reorderLevel: integer('reorder_level').notNull().default(10),
+  unit: text('unit').default('each'),
+  location: text('location'),
+  expiresAt: integer('expires_at'),
+  updatedAt: integer('updated_at').notNull(),
+  createdAt: integer('created_at').notNull(),
+});
+
+export const encounters = sqliteTable('encounters', {
+  id: text('id').primaryKey(),
+  patientId: text('patient_id').notNull(),
+  doctorId: text('doctor_id').notNull(),
+  encounterDate: integer('encounter_date').notNull(),
+  type: text('type', { enum: ['consultation', 'follow_up', 'emergency', 'telemedicine'] }).notNull().default('consultation'),
+  chiefComplaint: text('chief_complaint'),
+  diagnosis: text('diagnosis'),
+  notes: text('notes'),
+  createdAt: integer('created_at').notNull(),
+});

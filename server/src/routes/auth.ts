@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { getDb, schema } from '../db/index.js';
-import { verifyPin } from '../lib/pin.js';
+import { verifyPin, hashPin, isLegacyHash } from '../lib/pin.js';
 import { env } from '../lib/env.js';
 import { signSessionToken } from '../lib/session-token.js';
 import { SESSION_COOKIE } from '../middleware/session.js';
@@ -51,9 +51,14 @@ authRouter.post('/auth/login', async (req, res) => {
     res.status(401).json({ error: 'invalid_credentials', attemptsBeforeLock: MAX_FAILED });
     return;
   }
+  const update: Partial<typeof schema.users.$inferInsert> = { failedAttempts: 0 };
+  if (isLegacyHash(user.pinHash)) {
+    update.pinHash = hashPin(pin);
+    update.pinRotatedAt = Date.now();
+  }
   await db
     .update(schema.users)
-    .set({ failedAttempts: 0 })
+    .set(update)
     .where(eq(schema.users.id, user.id))
     .run();
 

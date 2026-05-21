@@ -7,6 +7,21 @@ process.env.DEMO_DOCTOR_PIN = '4242';
 process.env.DEMO_DOCTOR_PHONE = '+254700000001';
 process.env.DEMO_PATIENT_PHONE = '+254700000002';
 process.env.SESSION_SECRET = 'test-session-secret-at-least-32-chars-long-ok';
+delete process.env.DAILY_API_KEY;
+delete process.env.DAILY_DOMAIN;
+delete process.env.GROQ_API_KEY;
+delete process.env.OPENAI_API_KEY;
+delete process.env.OPENROUTER_API_KEY;
+delete process.env.AT_API_KEY;
+
+const realFetch = globalThis.fetch;
+globalThis.fetch = ((input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
+  if (url.includes('api.fda.gov')) {
+    return Promise.resolve(new Response('', { status: 404 }));
+  }
+  return realFetch(input, init);
+}) as typeof fetch;
 
 let app: import('express').Express;
 let agent: ReturnType<typeof request.agent>;
