@@ -11,15 +11,27 @@ let cached: { db: LibSQLDatabase<typeof schema>; raw: Client } | null = null;
 
 export async function getDb(databaseUrl?: string) {
   if (cached) return cached;
-  const url = databaseUrl ?? process.env.DATABASE_URL ?? resolve(here, '../../data/medcore.db');
-  let libsqlUrl: string;
-  if (url === ':memory:') {
-    libsqlUrl = 'file::memory:?cache=shared';
+
+  const tursoUrl = process.env.TURSO_DATABASE_URL;
+  const tursoAuth = process.env.TURSO_AUTH_TOKEN;
+  let raw: Client;
+
+  if (!databaseUrl && tursoUrl) {
+    // Remote Turso (libSQL over HTTPS). Used in Vercel deploys.
+    raw = createClient({ url: tursoUrl, authToken: tursoAuth });
   } else {
-    mkdirSync(dirname(url), { recursive: true });
-    libsqlUrl = `file:${url}`;
+    // Local file or :memory: (dev + tests).
+    const url = databaseUrl ?? process.env.DATABASE_URL ?? resolve(here, '../../data/medcore.db');
+    let libsqlUrl: string;
+    if (url === ':memory:') {
+      libsqlUrl = 'file::memory:?cache=shared';
+    } else {
+      mkdirSync(dirname(url), { recursive: true });
+      libsqlUrl = `file:${url}`;
+    }
+    raw = createClient({ url: libsqlUrl });
   }
-  const raw = createClient({ url: libsqlUrl });
+
   const migrationSql = readFileSync(resolve(here, 'migrations.sql'), 'utf8');
   const statements = migrationSql.split(';').map(s => s.trim()).filter(Boolean);
   for (const stmt of statements) {

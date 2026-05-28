@@ -12,7 +12,17 @@ import { env } from '../lib/env.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const AUDIO_DIR = resolve(here, '../../data/audio');
-mkdirSync(AUDIO_DIR, { recursive: true });
+// On Vercel (read-only deployment FS), we skip persisting audio to disk.
+// The transcript is the source of truth; the audio replay endpoint just 404s.
+// Locally and on the GCP VM, we still write audio for retention/replay.
+const PERSIST_AUDIO = !process.env.VERCEL;
+if (PERSIST_AUDIO) {
+  try {
+    mkdirSync(AUDIO_DIR, { recursive: true });
+  } catch {
+    // best-effort; if it fails we just won't persist.
+  }
+}
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
@@ -29,9 +39,17 @@ voiceRouter.post('/transcribe', upload.single('audio'), async (req, res) => {
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten() }); return; }
   if (!req.file) { res.status(400).json({ error: 'audio file required' }); return; }
   const id = newId('VOI');
-  const filename = `${id}.webm`;
-  const filepath = join(AUDIO_DIR, filename);
-  writeFileSync(filepath, req.file.buffer);
+  let storedPath: string | null = null;
+  if (PERSIST_AUDIO) {
+    const filename = `${id}.webm`;
+    const filepath = join(AUDIO_DIR, filename);
+    try {
+      writeFileSync(filepath, req.file.buffer);
+      storedPath = filepath;
+    } catch {
+      // serverless or read-only FS — skip persistence
+    }
+  }
   const { text, provider } = await transcribeAudio({ buffer: req.file.buffer, mime: req.file.mimetype });
   const expires = Date.now() + env.AUDIO_RETENTION_DAYS * 24 * 60 * 60 * 1000;
   const { db } = await getDb();
@@ -40,7 +58,7 @@ voiceRouter.post('/transcribe', upload.single('audio'), async (req, res) => {
     patientId: parsed.data.patientId,
     doctorId: parsed.data.doctorId,
     source: parsed.data.source,
-    audioPath: filepath,
+    audioPath: storedPath,
     audioMime: req.file.mimetype,
     durationSec: parsed.data.durationSec,
     transcript: text,

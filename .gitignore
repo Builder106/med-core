@@ -35,3 +35,5 @@ test-results
 docs/ENV_SETUP.md
 docs/go-to-market.md
 docs/*.pdf
+.vercel
+.env*.local

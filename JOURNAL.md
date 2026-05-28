@@ -8,6 +8,12 @@
 
 ---
 
+## 2026-05-28 — Landed deferred Turso/Vercel-FS path support `#milestone`
+
+Folded in the in-flight server work from before the pivot: optional Turso (remote libSQL over HTTPS) backend via `TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`, gated so the GCP VM keeps using its local SQLite file (env vars unset → existing code path). `voice.ts` skips audio persistence when `process.env.VERCEL` is set so the read-only deployment FS doesn't blow up the transcribe endpoint — transcript is source of truth, the audio replay endpoint just 404s in that mode. `migrate.ts` now accepts `--env <file>` and `--seed` flags for remote-DB workflows. None of this is on the production path today (Vercel serves static-only via PR #10's rewrite), but the code paths are now in place if a Vercel-Turso preview environment ever makes sense. Also deleted the legacy `api/[...all].ts` entry point — it was the original "deploy Express to Vercel as a serverless function" handler from May 21, never actually shipped, made obsolete by the static + rewrite pivot.
+
+---
+
 ## 2026-05-28 — Post-pivot baseline cleanup `#milestone`
 
 After the Vercel rewrite landed (PR #10), did a baseline audit against the standard-repo checklist and closed the gaps that opened up by the platform pivot: README's `Demo` badge + GitHub repo homepage URL updated from the nip.io backend to `medcore-health.vercel.app`; banner `<picture>` srcsets swapped from `.png` to `.svg` (sources existed all along, README just referenced the rasterized fallbacks); added `apple-touch-icon.png` at 180×180 generated from `favicon.svg` via rsvg-convert with `#214838` background (iOS Safari ignores SVG favicons for home-screen installs, falls back to a low-res page screenshot); replaced deprecated `apple-mobile-web-app-capable` with the modern `mobile-web-app-capable` meta (also kept the legacy tag for iOS < 16 compatibility); installed `@vercel/analytics` + `@vercel/speed-insights` and mounted both inside `AppProvider` so the dashboards at `vercel.com/sankofa-forge/medcore/{analytics,speed-insights}` start collecting on the next deploy.
