@@ -130,7 +130,7 @@ jobs:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Setup gcloud
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Reset VM to pick up new image
         # The VM has a startup-script that runs up.sh, which `docker pull`s the
