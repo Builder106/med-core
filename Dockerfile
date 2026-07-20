@@ -1,14 +1,14 @@
 FROM node:24-alpine AS frontend-build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --include=dev --ignore-scripts
+RUN npm ci --legacy-peer-deps --include=dev --ignore-scripts
 COPY . .
 RUN npm run build
 
 FROM node:24-alpine AS server-deps
 WORKDIR /app/server
 COPY server/package.json server/package-lock.json ./
-RUN npm ci --omit=dev --ignore-scripts
+RUN npm ci --legacy-peer-deps --omit=dev --ignore-scripts
 
 FROM node:24-alpine AS runtime
 ENV NODE_ENV=production
