@@ -37,3 +37,4 @@ docs/go-to-market.md
 docs/*.pdf
 .vercel
 .env*.local
+.vscode/settings.json
