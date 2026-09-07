@@ -4,6 +4,10 @@
 
 **Tags:** `#decision` `#pivot` `#incident` `#quote` `#feedback` `#milestone`
 
+## 2026-09-07: Standardized CI on Node 24 #decision
+
+Pinned the client and server CI jobs to Node 24 while preserving the existing production and preview branch policy and the Node 24 Docker images. Clean-install verification passed on both `staging` and `main` under Node 24.20.0 and npm 10.9.9; lockfiles and application behavior were unchanged.
+
 ## 2026-08-29: Let Vercel detect the MedCore build settings #decision
 
 Removed the explicit Vite framework, build, output, and install settings from `vercel.json` so Vercel can use the project defaults. Kept the `main` and `staging` Git deployment gates and the API rewrite.
