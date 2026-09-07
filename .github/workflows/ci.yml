@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 26
+          node-version: 24
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npm run lint
@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 26
+          node-version: 24
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npm run format
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 26
+          node-version: 24
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npm --prefix server ci
@@ -70,7 +70,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 26
+          node-version: 24
           cache: npm
       - run: npm --prefix server ci
       - run: npm --prefix server run lint
@@ -82,7 +82,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 26
+          node-version: 24
           cache: npm
       - run: npm --prefix server ci
       - run: npm --prefix server run format
@@ -97,7 +97,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: 26
+          node-version: 24
           cache: npm
 
       - name: Install root dependencies
@@ -141,7 +141,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 26
+          node-version: 24
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npm --prefix server ci
@@ -175,4 +175,3 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           curl -sS -f -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_PROD }}"
-
