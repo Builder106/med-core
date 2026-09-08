@@ -26,6 +26,9 @@ updates:
       - dependency-name: react-router
         update-types:
           - "version-update:semver-major"
+      - dependency-name: typescript
+        versions:
+          - ">= 7.0.0"
 
   - package-ecosystem: npm
     directory: /server
@@ -43,6 +46,10 @@ updates:
     labels:
       - dependencies
       - server
+    ignore:
+      - dependency-name: typescript
+        versions:
+          - ">= 7.0.0"
 
   - package-ecosystem: github-actions
     directory: /
@@ -76,9 +83,6 @@ updates:
       - dependency-name: node
         update-types:
           - "version-update:semver-major"
-      - dependency-name: typescript
-        versions:
-          - ">= 7.0.0"
 
   - package-ecosystem: docker-compose
     directory: /
