@@ -14,3 +14,18 @@ Feature: Authentication
     And I fill "pin" with "0000"
     And I click the "sign in" button
     Then I should see "invalid"
+
+  Scenario: Patient can read the seeded synthetic patient record
+    Given I am signed in as "PAT-001"
+    When I request the patient record "PAT-001"
+    Then the API response status should be 200
+
+  Scenario: Patient cannot access the staff directory
+    Given I am signed in as "PAT-001"
+    When I request the staff directory
+    Then the API response status should be 403
+
+  Scenario: Facility admin can access the staff directory
+    Given I am signed in as "ADM-001"
+    When I request the staff directory
+    Then the API response status should be 200

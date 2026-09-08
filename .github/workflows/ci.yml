@@ -134,7 +134,7 @@ jobs:
 
   e2e:
     name: E2E & Accessibility
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'))
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

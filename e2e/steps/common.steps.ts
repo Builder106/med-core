@@ -8,6 +8,8 @@ const DEFAULT_PINS: Record<string, string> = {
   'ADM-001': '3434',
 };
 
+const apiResponses = new WeakMap<object, number>();
+
 Given('I am on the home page', async ({ page }) => {
   await page.goto('/');
   await dwellForDemo(page);
@@ -16,10 +18,11 @@ Given('I am on the home page', async ({ page }) => {
 Given('I am signed in as {string}', async ({ page }, userId: string) => {
   const pin = DEFAULT_PINS[userId];
   if (!pin) throw new Error(`No default PIN known for ${userId}`);
-  await page.goto('/login');
-  await page.getByLabel(/user id/i).fill(userId);
-  await page.getByLabel(/pin/i).fill(pin);
-  await page.getByRole('button', { name: /sign in|log in/i }).click();
+  const response = await page.request.post('/api/auth/login', {
+    data: { userId, pin },
+  });
+  expect(response.ok()).toBe(true);
+  await page.goto('/');
   await page.waitForLoadState('networkidle');
   await dwellForDemo(page);
 });
@@ -28,6 +31,20 @@ When('I navigate to {string}', async ({ page }, path: string) => {
   await page.goto(path);
   await page.waitForLoadState('networkidle');
   await dwellForDemo(page);
+});
+
+When('I request the patient record {string}', async ({ page }, patientId: string) => {
+  const response = await page.request.get(`/api/patients/${patientId}`);
+  apiResponses.set(page, response.status());
+});
+
+When('I request the staff directory', async ({ page }) => {
+  const response = await page.request.get('/api/staff');
+  apiResponses.set(page, response.status());
+});
+
+Then('the API response status should be {int}', async ({ page }, status: number) => {
+  expect(apiResponses.get(page)).toBe(status);
 });
 
 When('I click the {string} button', async ({ page }, label: string) => {
