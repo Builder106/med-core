@@ -5,8 +5,8 @@
   },
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://api.yinkavaughan.me/api/$1"
+      "source": "/api/:path*",
+      "destination": "https://api.yinkavaughan.me/api/:path*"
     }
   ]
 }
