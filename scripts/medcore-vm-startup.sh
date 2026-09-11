@@ -10,7 +10,7 @@
 #
 # To update: edit this file, then push to the VM with
 #   gcloud compute instances add-metadata medcore-api \
-#     --project=medcore-app-89455 --zone=us-west1-a \
+#     --project=medcore-health-platform --zone=us-west1-a \
 #     --metadata-from-file=startup-script=scripts/medcore-vm-startup.sh
 # It takes effect on the next boot (or run manually with sudo google_metadata_script_runner).
 

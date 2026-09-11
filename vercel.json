@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://136-117-181-143.nip.io/api/$1"
+      "destination": "https://api.yinkavaughan.me/api/$1"
     }
   ]
 }

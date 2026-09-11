@@ -137,15 +137,15 @@ jobs:
         # latest image before docker run. Reset is enough — no SSH needed.
         run: |
           gcloud compute instances reset medcore-api \
-            --project=medcore-app-89455 \
+            --project=medcore-health-platform \
             --zone=us-west1-a
 
       - name: Wait for /api/health
         run: |
           for i in $(seq 1 24); do
-            if curl -fsk --max-time 5 https://136-117-181-143.nip.io/api/health 2>/dev/null | grep -q '"ok":true'; then
+            if curl -fsS --max-time 5 https://api.yinkavaughan.me/api/health 2>/dev/null | grep -q '"ok":true'; then
               echo "Healthy after $i tries"
-              curl -sk --max-time 5 https://136-117-181-143.nip.io/api/health
+              curl -fsS --max-time 5 https://api.yinkavaughan.me/api/health
               exit 0
             fi
             echo "[try $i] not yet"
@@ -161,5 +161,5 @@ jobs:
             echo "### Deploy to VM"
             echo ""
             echo "- VM: \`medcore-api\` (us-west1-a)"
-            echo "- Live: <https://136-117-181-143.nip.io>"
+            echo "- Live: <https://api.yinkavaughan.me>"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -109,7 +109,7 @@ All external integrations fall back to mocks when API keys are absent, so the ca
 
 ![Doctor signs in and opens a patient chart](assets/demo-01-core.gif)
 
-Recorded against the live deploy at <https://136-117-181-143.nip.io> via the [`e2e/demo/features/01-core.feature`](e2e/demo/features/01-core.feature) Gherkin scenario.
+Recorded against the live deploy at <https://api.yinkavaughan.me> via the [`e2e/demo/features/01-core.feature`](e2e/demo/features/01-core.feature) Gherkin scenario.
 
 </details>
 
@@ -120,7 +120,7 @@ The Gherkin suite at [`e2e/demo/features/`](e2e/demo/features/) drives Playwrigh
 
 ```bash
 npx playwright install chromium    # one-time
-E2E_BASE_URL=https://136-117-181-143.nip.io DEMO=1 npm run e2e:demo  # records mp4
+E2E_BASE_URL=https://api.yinkavaughan.me DEMO=1 npm run e2e:demo  # records mp4
 npm run e2e:demo:gif               # mp4 -> gif (10 fps, 960px wide)
 cp e2e/demo-videos/<slug>.gif assets/<name>.gif
 ```
