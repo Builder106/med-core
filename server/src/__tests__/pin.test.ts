@@ -34,7 +34,6 @@ describe('pin lib', () => {
     expect(verifyPin('4242', 'scrypt$invalid$length')).toBe(false);
     expect(verifyPin('4242', 'shortlegacyhex')).toBe(false);
     // Invalid argument type to trigger catch block in scrypt verify
-    expect(verifyPin(undefined as any, 'scrypt$YWJj$ZGVm')).toBe(false);
     expect(verifyPin(undefined as unknown as string, 'scrypt$YWJj$ZGVm')).toBe(false);
   });
 
