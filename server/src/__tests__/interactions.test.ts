@@ -35,6 +35,7 @@ describe('interactions lib', () => {
     });
 
     const resCrit = await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchCritical as any);
+    const resCrit = await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchCritical as unknown as typeof fetch);
     expect(resCrit?.level).toBe('critical');
     expect(resCrit?.source).toBe('openfda');
 
@@ -47,6 +48,7 @@ describe('interactions lib', () => {
     });
 
     const resWarn = await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchWarning as any);
+    const resWarn = await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchWarning as unknown as typeof fetch);
     expect(resWarn?.level).toBe('warning');
 
     // Info match (default when no critical/warning keywords match)
@@ -60,6 +62,7 @@ describe('interactions lib', () => {
     });
 
     const resInfo = await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchInfo as any);
+    const resInfo = await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchInfo as unknown as typeof fetch);
     expect(resInfo?.level).toBe('info');
 
     // Missing or empty drug_interactions in results
@@ -71,6 +74,7 @@ describe('interactions lib', () => {
     });
     expect(
       await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchUndefinedInteractions as any)
+      await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchUndefinedInteractions as unknown as typeof fetch)
     ).toBeNull();
 
     // Empty results array
@@ -82,6 +86,7 @@ describe('interactions lib', () => {
     });
     expect(
       await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchEmptyResults as any)
+      await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchEmptyResults as unknown as typeof fetch)
     ).toBeNull();
 
     // Missing results property
@@ -91,6 +96,7 @@ describe('interactions lib', () => {
     });
     expect(
       await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchNoResults as any)
+      await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchNoResults as unknown as typeof fetch)
     ).toBeNull();
 
     // HTTP error response
@@ -98,10 +104,12 @@ describe('interactions lib', () => {
       ok: false,
     });
     expect(await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchError as any)).toBeNull();
+    expect(await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchError as unknown as typeof fetch)).toBeNull();
 
     // Exception thrown by fetch
     const mockFetchThrows = vi.fn().mockRejectedValue(new Error('Network offline'));
     expect(await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchThrows as any)).toBeNull();
+    expect(await checkInteractionViaOpenFDA('DrugA', 'DrugB', mockFetchThrows as unknown as typeof fetch)).toBeNull();
   });
 
   it('resolves interactions with priority on fallback before remote API', async () => {
@@ -118,6 +126,7 @@ describe('interactions lib', () => {
           results: [{ drug_interactions: ['Avoid coadministration due to toxicity.'] }],
         }),
       }) as any;
+      }) as unknown as typeof fetch;
 
       const remoteRes = await resolveInteraction('DrugAlpha', 'DrugBeta');
       expect(remoteRes.level).toBe('warning');
