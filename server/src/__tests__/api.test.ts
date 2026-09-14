@@ -53,6 +53,17 @@ describe('API foundation', () => {
     expect(res.status).toBe(200);
     expect(res.body.patient.firstName).toBe('Amina');
   });
+
+  it('POST /api/ai/risk-flags returns validated risk flags', async () => {
+    const res = await agent.post('/api/ai/risk-flags').send({ patientId: 'PAT-001' });
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.flags)).toBe(true);
+    expect(res.body.flags.length).toBeGreaterThan(0);
+    expect(res.body.flags[0]).toHaveProperty('severity');
+    expect(res.body.flags[0]).toHaveProperty('category');
+    expect(res.body.flags[0]).toHaveProperty('message');
+    expect(res.body.flags[0]).toHaveProperty('action');
+  });
 });
 
 describe('Drug interactions (F6)', () => {

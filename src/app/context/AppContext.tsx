@@ -43,13 +43,15 @@ export function loadPrefs(): PersistedPrefs {
   try {
     const raw = window.localStorage.getItem(PREFS_STORAGE_KEY);
     if (!raw) return {};
-    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    const record = parsed as Record<string, unknown>;
     const out: PersistedPrefs = {};
-    const lang = parsed.lang;
+    const lang = record.lang;
     if (typeof lang === 'string' && VALID_LANGS.includes(lang as Language))
       out.lang = lang as Language;
-    if (typeof parsed.currentPatientId === 'string' && parsed.currentPatientId.length > 0) {
-      out.currentPatientId = parsed.currentPatientId;
+    if (typeof record.currentPatientId === 'string' && record.currentPatientId.length > 0) {
+      out.currentPatientId = record.currentPatientId;
     }
     return out;
   } catch {

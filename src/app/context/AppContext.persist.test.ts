@@ -54,6 +54,13 @@ describe('AppContext preference persistence', () => {
     expect(loadPrefs()).toEqual({});
   });
 
+  it('returns empty object when stored JSON is not a non-null object', () => {
+    for (const val of ['null', '123', '"string"', 'true', '[]']) {
+      (window as unknown as { localStorage: Storage }).localStorage.setItem(PREFS_STORAGE_KEY, val);
+      expect(loadPrefs()).toEqual({});
+    }
+  });
+
   it('accepts all five supported languages', () => {
     for (const lang of ['en', 'fr', 'ar', 'sw', 'ha'] as const) {
       savePrefs({ lang });

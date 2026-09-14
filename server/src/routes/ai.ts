@@ -203,6 +203,14 @@ aiRouter.post('/ai/chat', async (req, res) => {
 
 const RiskBody = z.object({ patientId: z.string() });
 
+const AiRiskFlagSchema = z.object({
+  severity: z.enum(['high', 'medium', 'low']),
+  category: z.string(),
+  message: z.string(),
+  action: z.string(),
+});
+const AiRiskFlagsResponseSchema = z.array(AiRiskFlagSchema).catch([]);
+
 aiRouter.post('/ai/risk-flags', async (req, res) => {
   const parsed = RiskBody.safeParse(req.body);
   if (!parsed.success) {
@@ -220,9 +228,10 @@ aiRouter.post('/ai/risk-flags', async (req, res) => {
     maxTokens: 600,
     cachedSystem: false,
   });
-  let flags: unknown;
+  let flags: z.infer<typeof AiRiskFlagsResponseSchema>;
   try {
-    flags = JSON.parse(result.text);
+    const parsedJson = JSON.parse(result.text);
+    flags = AiRiskFlagsResponseSchema.parse(parsedJson);
   } catch {
     flags = [];
   }
