@@ -4,6 +4,10 @@
 
 **Tags:** `#decision` `#pivot` `#incident` `#quote` `#feedback` `#milestone`
 
+## 2026-09-14: Blocked nested branches from triggering Vercel deployments #decision
+
+Updated `git.deploymentEnabled` in `vercel.json` to include the globstar pattern `**` alongside `*`. A single asterisk in minimatch stops at slash boundaries, which previously allowed multi-segment branches like `dependabot/npm_and_yarn/...` to bypass the rule and fall back to Vercel's default auto-deploy behavior.
+
 ## 2026-09-07: Standardized CI on Node 24 #decision
 
 Pinned the client and server CI jobs to Node 24 while preserving the existing production and preview branch policy and the Node 24 Docker images. Clean-install verification passed on both `staging` and `main` under Node 24.20.0 and npm 10.9.9; lockfiles and application behavior were unchanged.

@@ -3,9 +3,10 @@
   "installCommand": "npm ci --legacy-peer-deps",
   "git": {
     "deploymentEnabled": {
-      "*": false,
       "main": true,
-      "staging": true
+      "staging": true,
+      "*": false,
+      "**": false
     }
   },
   "rewrites": [
