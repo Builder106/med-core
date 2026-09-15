@@ -647,8 +647,23 @@ export async function aiChat(body: {
   });
 }
 
+interface FhirExportResource {
+  resourceType: string;
+  id: string;
+  [key: string]: unknown;
+}
+
+interface FhirExportBundle {
+  resourceType: 'Bundle';
+  id: string;
+  type: 'collection';
+  timestamp: string;
+  total: number;
+  entry: Array<{ fullUrl: string; resource: FhirExportResource }>;
+}
+
 export async function exportFhirBundle(patientId: string): Promise<string> {
-  const data = await apiFetch<unknown>(
+  const data = await apiFetch<FhirExportBundle>(
     `/fhir/Patient/${encodeURIComponent(patientId)}/$everything`
   );
   return JSON.stringify(data, null, 2);
