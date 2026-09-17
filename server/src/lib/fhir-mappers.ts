@@ -1,9 +1,18 @@
 // Maps MedCore DB rows to FHIR R4 resource objects (read-only export).
 
+export type FhirFieldValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | FhirFieldValue[]
+  | { [key: string]: FhirFieldValue };
+
 export interface FhirResource {
   resourceType: string;
   id: string;
-  [key: string]: unknown;
+  [key: string]: FhirFieldValue;
 }
 
 export interface FhirBundle {
@@ -18,7 +27,7 @@ export interface FhirBundle {
 export interface FhirExtension {
   url: string;
   valueString?: string;
-  [key: string]: unknown;
+  [key: string]: FhirFieldValue;
 }
 
 export interface FhirIdentifier {
