@@ -1,12 +1,7 @@
 const base = '/api';
 
 export type ApiPayload =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: ApiPayload | undefined }
-  | ApiPayload[];
+  string | number | boolean | null | { [key: string]: ApiPayload | undefined } | ApiPayload[];
 
 export async function apiFetch<T = ApiPayload>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${base}${path}`, {

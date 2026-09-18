@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { loadPrefs, PREFS_STORAGE_KEY, savePrefs } from './AppContext';
 import { createMemoryStorage } from '../../test/helpers';
+import { loadPrefs, PREFS_STORAGE_KEY, savePrefs } from './AppContext';
 
 beforeEach(() => {
   vi.stubGlobal('window', { localStorage: createMemoryStorage() });
@@ -24,7 +24,10 @@ describe('AppContext preference persistence', () => {
   });
 
   it('ignores unknown languages when loading', () => {
-    window.localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify({ lang: 'xx', currentPatientId: 'PAT-1' }));
+    window.localStorage.setItem(
+      PREFS_STORAGE_KEY,
+      JSON.stringify({ lang: 'xx', currentPatientId: 'PAT-1' })
+    );
     expect(loadPrefs()).toEqual({ currentPatientId: 'PAT-1' });
   });
 

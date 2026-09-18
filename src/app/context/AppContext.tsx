@@ -43,7 +43,9 @@ export function loadPrefs(): PersistedPrefs {
   try {
     const raw = window.localStorage.getItem(PREFS_STORAGE_KEY);
     if (!raw) return {};
-    const parsed = JSON.parse(raw) as Partial<Record<string, string | number | boolean | null>> | null;
+    const parsed = JSON.parse(raw) as Partial<
+      Record<string, string | number | boolean | null>
+    > | null;
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
     const record = parsed;
     const out: PersistedPrefs = {};

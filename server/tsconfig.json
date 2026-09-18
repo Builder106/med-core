@@ -10,6 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "types": ["node"],
+    "skipLibCheck": true,
     "outDir": "dist"
   },
   "include": ["src/**/*"]
