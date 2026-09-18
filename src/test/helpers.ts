@@ -14,7 +14,10 @@ export function createMemoryStorage(): Storage {
   };
 }
 
-export function createFetchMock(body: unknown, init: ResponseInit = {}): typeof fetch {
+export function createFetchMock(
+  body: Record<string, unknown> | unknown[] | string | number | boolean | null,
+  init: ResponseInit = {}
+): typeof fetch {
   return vi.fn(
     async () =>
       new Response(JSON.stringify(body), {

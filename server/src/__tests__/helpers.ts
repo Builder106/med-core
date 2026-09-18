@@ -1,6 +1,9 @@
 import { vi } from 'vitest';
 
-export function mockFetchJson(body: unknown, init: ResponseInit = {}): typeof fetch {
+export function mockFetchJson(
+  body: Record<string, unknown> | unknown[] | string | number | boolean | null,
+  init: ResponseInit = {}
+): typeof fetch {
   return vi.fn(
     async () =>
       new Response(JSON.stringify(body), {

@@ -12,7 +12,7 @@ export type FhirFieldValue =
 export interface FhirResource {
   resourceType: string;
   id: string;
-  [key: string]: unknown;
+  [key: string]: FhirFieldValue;
 }
 
 export interface FhirBundle {
