@@ -1,6 +1,18 @@
 type Level = 'debug' | 'info' | 'warn' | 'error';
 
-function emit(level: Level, msg: string, meta?: Record<string, unknown>) {
+export type LogMetaValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Error
+  | LogMetaValue[]
+  | { [key: string]: LogMetaValue };
+
+export type LogMeta = Record<string, LogMetaValue>;
+
+function emit(level: Level, msg: string, meta?: LogMeta) {
   const entry = {
     ts: new Date().toISOString(),
     level,
@@ -16,8 +28,8 @@ function emit(level: Level, msg: string, meta?: Record<string, unknown>) {
 }
 
 export const logger = {
-  debug: (msg: string, meta?: Record<string, unknown>) => emit('debug', msg, meta),
-  info: (msg: string, meta?: Record<string, unknown>) => emit('info', msg, meta),
-  warn: (msg: string, meta?: Record<string, unknown>) => emit('warn', msg, meta),
-  error: (msg: string, meta?: Record<string, unknown>) => emit('error', msg, meta),
+  debug: (msg: string, meta?: LogMeta) => emit('debug', msg, meta),
+  info: (msg: string, meta?: LogMeta) => emit('info', msg, meta),
+  warn: (msg: string, meta?: LogMeta) => emit('warn', msg, meta),
+  error: (msg: string, meta?: LogMeta) => emit('error', msg, meta),
 };

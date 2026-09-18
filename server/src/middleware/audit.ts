@@ -5,11 +5,13 @@ import { isPublicApiPath } from './session.js';
 
 const SKIP_PATHS = new Set(['/health', '/auth/me', '/push/vapid']);
 
-function extractPatientId(path: string, body: unknown): string | null {
+export type RequestBody = Record<string, string | number | boolean | null | undefined | object>;
+
+function extractPatientId(path: string, body: RequestBody | null | undefined): string | null {
   const match = path.match(/\/patients\/([^/]+)/);
   if (match) return match[1];
   if (body && typeof body === 'object' && 'patientId' in body) {
-    const val = (body as { patientId?: unknown }).patientId;
+    const val = body.patientId;
     if (typeof val === 'string') return val;
   }
   return null;

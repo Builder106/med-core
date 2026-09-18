@@ -1,6 +1,14 @@
 const base = '/api';
 
-export async function apiFetch<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+export type ApiPayload =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: ApiPayload | undefined }
+  | ApiPayload[];
+
+export async function apiFetch<T = ApiPayload>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${base}${path}`, {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
@@ -11,7 +19,7 @@ export async function apiFetch<T = unknown>(path: string, init?: RequestInit): P
   if (!res.ok) {
     const err = new Error(data?.error || `API ${res.status}`) as Error & {
       status?: number;
-      payload?: unknown;
+      payload?: ApiPayload;
     };
     err.status = res.status;
     err.payload = data;
@@ -650,7 +658,7 @@ export async function aiChat(body: {
 interface FhirExportResource {
   resourceType: string;
   id: string;
-  [key: string]: unknown;
+  [key: string]: ApiPayload | undefined;
 }
 
 interface FhirExportBundle {
