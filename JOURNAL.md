@@ -1,5 +1,9 @@
 # JOURNAL — MedCore
 
+## 2026-09-17 - Added typed frontend test boundaries #fix
+
+Centralized storage, media-query, and JSON fetch test helpers, added strict frontend typecheck coverage, and migrated preference and interaction tests away from environment and fetch double casts while leaving server checks unchanged.
+
 > Dated log of decisions, pivots, incidents, and quotes. Add entries as things happen — retrospectives need this raw material to land. Not a changelog (commit messages are that). Not a ticket tracker. Capture the *human* context that disappears within weeks.
 
 **Tags:** `#decision` `#pivot` `#incident` `#quote` `#feedback` `#milestone`
@@ -172,3 +176,6 @@ Commits `2f66904`+`b467cb3`. Vite 6 + React + Tailwind. First UI shell. The jour
 When something happens during active MedCore work — a user-facing decision, a pivot, a memorable conversation, a bug that taught something — add an entry here in the moment. One paragraph max. Use the tags. Date stamps in `YYYY-MM-DD`.
 
 Don't worry about polish. The point is the raw material; the polished retrospective comes later. A one-sentence note from today beats a missing paragraph from six months ago.
+## 2026-09-17 - Any/Unknown remediation baseline `#fix`
+
+Aligned the root flat-config packages at ESLint 9, added separate root and server typecheck scripts/configuration, enabled `no-explicit-any`, and added typed frontend/server test helpers without changing runtime behavior. The no-`skipLibCheck` baseline is currently blocked by missing direct Node and React DOM declaration packages plus pre-existing calendar, chart, resizable-panel, Vite, and React Router declaration incompatibilities; these are dependency-baseline issues, not Any/Unknown remediation changes.
