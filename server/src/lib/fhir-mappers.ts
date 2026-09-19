@@ -1,35 +1,5 @@
 // Maps MedCore DB rows to FHIR R4 resource objects (read-only export).
 
-export type FhirFieldValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | FhirFieldValue[]
-  | { [key: string]: FhirFieldValue };
-
-export interface FhirResource {
-  resourceType: string;
-  id: string;
-  [key: string]: FhirFieldValue;
-}
-
-export interface FhirBundle {
-  resourceType: 'Bundle';
-  id: string;
-  type: 'collection';
-  timestamp: string;
-  total: number;
-  entry: { fullUrl: string; resource: FhirResource }[];
-}
-
-export interface FhirExtension {
-  url: string;
-  valueString?: string;
-  [key: string]: FhirFieldValue;
-}
-
 export interface FhirIdentifier {
   system: string;
   value: string;
@@ -53,6 +23,40 @@ export interface FhirAllergyIntolerance {
   patient: { reference: string };
   code: { text: string };
   clinicalStatus: { coding: Array<{ code: string }> };
+}
+
+export type FhirFieldValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | FhirFieldValue[]
+  | { [key: string]: FhirFieldValue }
+  | FhirIdentifier[]
+  | FhirName[]
+  | FhirTelecom[]
+  | FhirAllergyIntolerance[];
+
+export interface FhirResource {
+  resourceType: string;
+  id: string;
+  [key: string]: FhirFieldValue;
+}
+
+export interface FhirBundle {
+  resourceType: 'Bundle';
+  id: string;
+  type: 'collection';
+  timestamp: string;
+  total: number;
+  entry: { fullUrl: string; resource: FhirResource }[];
+}
+
+export interface FhirExtension {
+  url: string;
+  valueString?: string;
+  [key: string]: FhirFieldValue;
 }
 
 export interface FhirPatient extends FhirResource {
@@ -193,14 +197,14 @@ export function toFhirPatient(p: PatientRow): FhirPatient {
       : {}),
     ...(allergies.length
       ? {
-          allergyIntolerance: allergies.map((a, i) => ({
-            resourceType: 'AllergyIntolerance' as const,
-            id: `allergy-${p.id}-${i}`,
-            patient: { reference: `Patient/${p.id}` },
-            code: { text: a },
-            clinicalStatus: { coding: [{ code: 'active' }] },
-          })),
-        }
+        allergyIntolerance: allergies.map((a, i) => ({
+          resourceType: 'AllergyIntolerance' as const,
+          id: `allergy-${p.id}-${i}`,
+          patient: { reference: `Patient/${p.id}` },
+          code: { text: a },
+          clinicalStatus: { coding: [{ code: 'active' }] },
+        })),
+      }
       : {}),
   };
 }
@@ -254,18 +258,18 @@ export function toFhirObservation(lab: LabRow): FhirObservation {
     ...(lab.referenceRange ? { referenceRange: [{ text: lab.referenceRange }] } : {}),
     ...(lab.status !== 'normal'
       ? {
-          interpretation: [
-            {
-              coding: [
-                {
-                  system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
-                  code: interpCode[lab.status] ?? 'U',
-                  display: lab.status,
-                },
-              ],
-            },
-          ],
-        }
+        interpretation: [
+          {
+            coding: [
+              {
+                system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+                code: interpCode[lab.status] ?? 'U',
+                display: lab.status,
+              },
+            ],
+          },
+        ],
+      }
       : {}),
   };
 }
