@@ -197,14 +197,14 @@ export function toFhirPatient(p: PatientRow): FhirPatient {
       : {}),
     ...(allergies.length
       ? {
-        allergyIntolerance: allergies.map((a, i) => ({
-          resourceType: 'AllergyIntolerance' as const,
-          id: `allergy-${p.id}-${i}`,
-          patient: { reference: `Patient/${p.id}` },
-          code: { text: a },
-          clinicalStatus: { coding: [{ code: 'active' }] },
-        })),
-      }
+          allergyIntolerance: allergies.map((a, i) => ({
+            resourceType: 'AllergyIntolerance' as const,
+            id: `allergy-${p.id}-${i}`,
+            patient: { reference: `Patient/${p.id}` },
+            code: { text: a },
+            clinicalStatus: { coding: [{ code: 'active' }] },
+          })),
+        }
       : {}),
   };
 }
@@ -258,18 +258,18 @@ export function toFhirObservation(lab: LabRow): FhirObservation {
     ...(lab.referenceRange ? { referenceRange: [{ text: lab.referenceRange }] } : {}),
     ...(lab.status !== 'normal'
       ? {
-        interpretation: [
-          {
-            coding: [
-              {
-                system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
-                code: interpCode[lab.status] ?? 'U',
-                display: lab.status,
-              },
-            ],
-          },
-        ],
-      }
+          interpretation: [
+            {
+              coding: [
+                {
+                  system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+                  code: interpCode[lab.status] ?? 'U',
+                  display: lab.status,
+                },
+              ],
+            },
+          ],
+        }
       : {}),
   };
 }
