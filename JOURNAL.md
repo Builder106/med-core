@@ -1,5 +1,9 @@
 # JOURNAL — MedCore
 
+## 2026-09-22: Added a server TypeScript 6/7 bridge #decision
+
+Review caught that the first lock still resolved plain TypeScript 6.0.3, so it had no TS6 compatibility shim. I pinned `typescript` to `npm:@typescript/typescript6@6.0.2` and changed `typecheck:ts6` to use the shim's `tsc6` binary. The regenerated lock records `@typescript/typescript6@6.0.2`, `tsc6`, and `@typescript/old` backed by TypeScript 6.0.3; `@typescript/native` stays at 7.0.2. The Linux ARM64 lock-generation run was `20260923T012153Z-2847142-20770`. The retrieved artifact hash was `bb3557d302328832251a0a1717e7da5696a9b56d0cf6a0a3abeb3520ba7d5562`; I restored ten existing optional `libc` selectors before integrating it, and the candidate lock hash is `e64afee73fab8a4b3ff5cae05a88d77c62fa39e433a78961e715efb88fcd474d`. Frozen `npm ci`, compiler version and dependency-tree checks, both typechecks, lint, format, and all 150 server tests passed sequentially. The matrix stopped at its storage preflight before starting jobs. With `--skipLibCheck false`, TS6 and TS7 still report the existing Drizzle declaration errors; the unchanged baseline reports the same errors, so `tsconfig.json` remains untouched. I left the frontend manifest and lockfile unchanged, and npm's `legacy-peer-deps` setting was false.
+
 ## 2026-09-17 - Added typed frontend test boundaries #fix
 
 Centralized storage, media-query, and JSON fetch test helpers, added strict frontend typecheck coverage, and migrated preference and interaction tests away from environment and fetch double casts while leaving server checks unchanged.

@@ -9,6 +9,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
+    "typecheck:ts6": "tsc6 --noEmit",
     "migrate": "tsx src/db/migrate.ts",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
@@ -38,13 +39,14 @@
     "@types/node-cron": "^3.0.11",
     "@types/supertest": "^7.2.1",
     "@types/web-push": "^3.6.4",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.8",
     "prettier-plugin-organize-imports": "^4.3.0",
     "supertest": "^7.2.2",
-    "typescript": "~6.0.3",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
     "typescript-eslint": "^8.70.0",
     "vitest": "^4.1.11"
   }
