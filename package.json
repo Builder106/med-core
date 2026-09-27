@@ -16,8 +16,10 @@
     "e2e": "bddgen test --config e2e/playwright.config.ts && playwright test --config=e2e/playwright.config.ts",
     "e2e:demo": "DEMO=1 bddgen test --config e2e/playwright.demo.config.ts && DEMO=1 playwright test --config=e2e/playwright.demo.config.ts",
     "e2e:demo:gif": "node scripts/mp4-to-gif.mjs",
+    "test:accessibility": "playwright test --config=playwright.accessibility.config.ts",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
+    "verify:a11y-matrix": "node --experimental-strip-types scripts/verify-a11y-matrix.ts",
     "format": "prettier --check .",
     "format:fix": "prettier --write ."
   },
@@ -84,6 +86,7 @@
     "vaul": "1.1.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "4.3.3",

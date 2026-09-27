@@ -152,6 +152,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run E2E suite
         run: npm run e2e
+      - name: Run automated accessibility audit
+        run: npm run test:accessibility
       - name: Upload Playwright artifacts on failure
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
@@ -160,12 +162,23 @@ jobs:
           path: |
             test-results/
             playwright-report/
+            audit-output/
           retention-days: 7
           if-no-files-found: ignore
 
+  matrix-evidence:
+    name: Accessibility matrix evidence
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm run verify:a11y-matrix -- --mode=pr
+
   deploy:
     name: Trigger Vercel Deployment
-    needs: [secrets, lint, format, typecheck, lint-server, format-server, test, e2e]
+    needs: [secrets, lint, format, typecheck, lint-server, format-server, test, e2e, matrix-evidence]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     runs-on: ubuntu-24.04
     steps:
