@@ -19,7 +19,7 @@
   "dependencies": {
     "@libsql/client": "^0.18.0",
     "cors": "^2.8.6",
-    "dotenv": "^18.0.3",
+    "dotenv": "^18.0.5",
     "drizzle-orm": "^0.45.3",
     "express": "^5.2.1",
     "helmet": "^8.3.0",
@@ -34,8 +34,8 @@
     "@eslint/js": "^10.0.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/multer": "^2.2.0",
-    "@types/node": "^26.6.2",
+    "@types/multer": "^2.3.0",
+    "@types/node": "^26.6.4",
     "@types/node-cron": "^3.0.11",
     "@types/supertest": "^7.2.1",
     "@types/web-push": "^3.6.4",
@@ -47,7 +47,7 @@
     "prettier-plugin-organize-imports": "^4.3.0",
     "supertest": "^7.3.0",
     "typescript": "npm:@typescript/typescript6@6.0.2",
-    "typescript-eslint": "^8.70.1",
+    "typescript-eslint": "^8.71.0",
     "vitest": "^4.1.11"
   }
 }
