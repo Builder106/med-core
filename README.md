@@ -58,47 +58,25 @@ PINs are configurable in `server/.env`(see`server/.env.example`). For production
 
 ## How it works
 
-```mermaid
-sequenceDiagram
-  actor Doctor
-  participant PWA as PWA<br/>(Vite + React)
-  participant API as Express API
-  participant DB as SQLite<br/>(libSQL)
-  participant Ext as External APIs<br/>(OpenFDA · Daily · AT · Whisper)
-  participant AI as AI Layer<br/>(OpenRouter · Groq)
+![Doctor opening a patient chart through the PWA, API, and SQLite](assets/diagrams/patient-chart.png)
 
-  Doctor->>PWA: Open patient chart
-  PWA->>API: GET /api/patients/:id<br/>(session cookie)
-  API->>API: requireApiSession + audit
-  API->>DB: SELECT patient, meds, labs, encounters
-  DB-->>API: rows
-  API-->>PWA: 200 JSON
-  PWA-->>Doctor: Render chart
+<details>
+<summary>AI summary request</summary>
 
-  Doctor->>PWA: Request AI summary
-  PWA->>API: POST /api/ai/summarize
-  API->>AI: Prompt with patient context
-  AI-->>API: Summary + risk flags
-  API-->>PWA: 200 JSON
-  PWA-->>Doctor: Show AI panel
+![Doctor requesting an AI summary with patient context and risk flags](assets/diagrams/ai-summary.png)
 
-  Doctor->>PWA: Prescribe new drug
-  PWA->>API: POST /api/prescriptions
-  API->>Ext: OpenFDA interaction check
-  Ext-->>API: critical / warning / none
-  alt critical, no ack
-    API-->>PWA: 409 critical_interaction
-    PWA-->>Doctor: Modal: override w/ PIN?
-    Doctor->>PWA: Acknowledge + PIN
-    PWA->>API: POST /api/prescriptions (ack)
-    API->>DB: INSERT prescription + audit
-    API-->>PWA: 201 created
-  else safe
-    API->>DB: INSERT prescription + audit
-    API-->>PWA: 201 created
-  end
-  PWA-->>Doctor: Updated chart
-```
+</details>
+
+<details>
+<summary>Prescription interaction check</summary>
+
+![Prescription interaction check through the PWA, API, and OpenFDA](assets/diagrams/prescription-check.png)
+
+</details>
+
+![Critical prescription override and accepted prescription save](assets/diagrams/prescription-outcome.png)
+
+The doctor opens a chart through a session-guarded API call; SQLite returns patient, medication, lab, and encounter data. An optional summary request sends patient context to the AI layer and returns a summary with risk flags. For a prescription, OpenFDA returns a critical, warning, or no-interaction result. A critical result without acknowledgement returns 409 and asks for a PIN; an acknowledged or noncritical request is written with an audit record and returns 201, then the chart updates. Edit the [chart](assets/diagrams/patient-chart.html), [summary](assets/diagrams/ai-summary.html), [interaction check](assets/diagrams/prescription-check.html), or [outcome](assets/diagrams/prescription-outcome.html) diagram.
 
 All external integrations fall back to mocks when API keys are absent, so the canonical journey above works offline.
 
