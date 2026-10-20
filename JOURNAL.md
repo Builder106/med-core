@@ -1,5 +1,9 @@
 # JOURNAL — MedCore
 
+## 2026-10-19: Merge the README flow figures into one guard #decision
+
+The four sequence figures (chart, summary, interaction check, outcome) used the cream template and spent most of their space on plain request and response pairs. The chart and summary flows are now two sentences, and one figure shows the part worth drawing: a critical interaction blocks the save with 409, 400, or 403 until the doctor acknowledges it with a valid PIN, as `routes/prescriptions.ts` does it.
+
 ## 2026-10-13: Redrew the README flow #decision
 
 The README's 26-message sequence is split into chart, AI summary, interaction check, and prescription outcome panels. The two duplicated save and 201-return messages from the original critical and safe branches are merged into a common accepted path. The critical 409 and PIN retry remain inside an optional fragment; the text names the noncritical path, session audit, AI risk flags, and final chart update.

@@ -58,25 +58,16 @@ PINs are configurable in `server/.env`(see`server/.env.example`). For production
 
 ## How it works
 
-![Doctor opening a patient chart through the PWA, API, and SQLite](assets/diagrams/patient-chart.png)
+The doctor opens a chart through a session-guarded API call, and SQLite returns the patient's medications, labs, and encounters. An optional summary request (`POST /api/ai/summarize`) sends that context to the AI layer and returns a summary with risk flags.
 
-<details>
-<summary>AI summary request</summary>
+A new prescription is checked against every active one before it is saved. A critical interaction stops the save unless the doctor acknowledges it and enters their PIN:
 
-![Doctor requesting an AI summary with patient context and risk flags](assets/diagrams/ai-summary.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/diagrams/prescription-guard-dark.png">
+  <img src="assets/diagrams/prescription-guard.png" alt="A new prescription is checked against each active drug through OpenFDA, RxNorm, or a fallback. A critical interaction blocks the save with 409 if it is not acknowledged, or 400 or 403 if the PIN is missing or wrong. Otherwise the API saves the prescription, records the interaction events, and returns 201." width="582">
+</picture>
 
-</details>
-
-<details>
-<summary>Prescription interaction check</summary>
-
-![Prescription interaction check through the PWA, API, and OpenFDA](assets/diagrams/prescription-check.png)
-
-</details>
-
-![Critical prescription override and accepted prescription save](assets/diagrams/prescription-outcome.png)
-
-The doctor opens a chart through a session-guarded API call; SQLite returns patient, medication, lab, and encounter data. An optional summary request sends patient context to the AI layer and returns a summary with risk flags. For a prescription, OpenFDA returns a critical, warning, or no-interaction result. A critical result without acknowledgement returns 409 and asks for a PIN; an acknowledged or noncritical request is written with an audit record and returns 201, then the chart updates. Edit the [chart](assets/diagrams/patient-chart.html), [summary](assets/diagrams/ai-summary.html), [interaction check](assets/diagrams/prescription-check.html), or [outcome](assets/diagrams/prescription-outcome.html) diagram.
+[Edit the diagram](assets/diagrams/prescription-guard.html).
 
 All external integrations fall back to mocks when API keys are absent, so the canonical journey above works offline.
 
