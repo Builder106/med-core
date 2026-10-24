@@ -41,7 +41,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#F3ECE1] bg-[radial-gradient(circle_at_top,_rgba(195,154,61,0.14),_transparent_45%)]">
+    <main className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#F3ECE1] bg-[radial-gradient(circle_at_top,_rgba(195,154,61,0.14),_transparent_45%)]">
       <div className="w-full max-w-sm rounded-2xl border border-[#D9C8AE] bg-[#F9F5ED] p-6 shadow-lg">
         <div className="flex items-center gap-3 mb-2">
           <div className="bg-[#214838] text-[#DAB776] p-2 rounded-xl shadow-sm">
@@ -117,8 +117,8 @@ export function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-6 text-[11px] text-[#8A806F] leading-relaxed">{t('auth.demoHint')}</p>
+        <p className="mt-6 text-[11px] text-[#5B5149] leading-relaxed">{t('auth.demoHint')}</p>
       </div>
-    </div>
+    </main>
   );
 }
