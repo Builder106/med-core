@@ -100,7 +100,7 @@ export function HealthIdPage() {
 
         <div className="p-6 flex flex-col items-center">
           <div className="bg-white p-3 rounded-xl border-2 border-slate-100">
-            <QRCodeSVG value={chartUrl} size={180} level="H" includeMargin />
+            <QRCodeSVG value={chartUrl} size={180} level="H" marginSize={4} />
           </div>
 
           <div className="w-full mt-6 space-y-0 divide-y divide-slate-100">

@@ -20,7 +20,7 @@ const CreateBody = z.object({
 remindersRouter.post('/reminders', async (req, res) => {
   const parsed = CreateBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const { db } = await getDb();
@@ -79,7 +79,7 @@ remindersRouter.post('/reminders/:id/respond', async (req, res) => {
   const Body = z.object({ response: z.enum(['TAKEN', 'SKIP']) });
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const { db } = await getDb();
@@ -147,7 +147,7 @@ remindersRouter.post('/push/subscribe', async (req, res) => {
   });
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const { db } = await getDb();
@@ -169,7 +169,7 @@ remindersRouter.post('/reminders/dispatch-now', async (req, res) => {
   const Body = z.object({ patientId: z.string() });
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const { db } = await getDb();

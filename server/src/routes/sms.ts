@@ -270,7 +270,7 @@ smsRouter.get('/sms/messages', async (req, res) => {
   });
   const parsed = Q.safeParse(req.query);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const all = await db

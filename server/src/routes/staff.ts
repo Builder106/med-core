@@ -17,7 +17,7 @@ const CreateBody = z.object({
   name: z.string().min(1),
   role: z.string().min(1),
   specialty: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z.email().optional(),
   phone: z.string().optional(),
   facilityId: z.string().optional(),
 });
@@ -25,7 +25,7 @@ const CreateBody = z.object({
 staffRouter.post('/staff', requireRole('admin'), async (req, res) => {
   const parsed = CreateBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const { db } = await getDb();
@@ -46,14 +46,14 @@ const PatchBody = z.object({
   status: z.enum(['active', 'on_leave', 'inactive']).optional(),
   role: z.string().optional(),
   specialty: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z.email().optional(),
   phone: z.string().optional(),
 });
 
 staffRouter.patch('/staff/:id', requireRole('admin'), async (req, res) => {
   const parsed = PatchBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const { db } = await getDb();

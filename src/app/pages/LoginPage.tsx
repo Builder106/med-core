@@ -1,5 +1,5 @@
 import { Hexagon } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useLocation } from 'react-router';
 import { useApp } from '../context/AppContext';
@@ -26,7 +26,7 @@ export function LoginPage() {
     return <Navigate to={returnTo} replace />;
   }
 
-  async function onSubmit(e: FormEvent) {
+  async function onSubmit(e: SubmitEvent) {
     e.preventDefault();
     setError(null);
     setPending(true);

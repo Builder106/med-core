@@ -16,7 +16,7 @@ const StartBody = z.object({
 videoRouter.post('/video/sessions', async (req, res) => {
   const parsed = StartBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const id = newId('VID');
@@ -54,7 +54,7 @@ videoRouter.post('/video/sessions/:id/end', async (req, res) => {
   const Body = z.object({ notes: z.string().optional() });
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const { db } = await getDb();

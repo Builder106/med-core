@@ -39,7 +39,7 @@ export function SmsInboxPage() {
     return () => clearInterval(iv);
   }, [filterType]);
 
-  async function onSimulate(e: React.FormEvent) {
+  async function onSimulate(e: React.SubmitEvent) {
     e.preventDefault();
     const res = await simulateInboundSms(simFrom, simBody);
     setLastReply(res.reply ?? res.error ?? null);

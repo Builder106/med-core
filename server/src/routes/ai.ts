@@ -106,7 +106,7 @@ const SummarizeBody = z.object({
 aiRouter.post('/ai/summarize', async (req, res) => {
   const parsed = SummarizeBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const ctx = await buildPatientContext(parsed.data.patientId);
@@ -162,7 +162,7 @@ const ChatBody = z.object({
 aiRouter.post('/ai/chat', async (req, res) => {
   const parsed = ChatBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const ctx = await buildPatientContext(parsed.data.patientId);
@@ -214,7 +214,7 @@ const AiRiskFlagsResponseSchema = z.array(AiRiskFlagSchema).catch([]);
 aiRouter.post('/ai/risk-flags', async (req, res) => {
   const parsed = RiskBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const ctx = await buildPatientContext(parsed.data.patientId);

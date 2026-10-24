@@ -41,7 +41,7 @@ const CreateBody = z.object({
 encountersRouter.post('/encounters', async (req, res) => {
   const parsed = CreateBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const { db } = await getDb();

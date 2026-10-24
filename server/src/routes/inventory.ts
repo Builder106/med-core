@@ -28,7 +28,7 @@ const CreateBody = z.object({
 inventoryRouter.post('/inventory', requireRole('admin'), async (req, res) => {
   const parsed = CreateBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const now = Date.now();
@@ -56,7 +56,7 @@ const PatchBody = z.object({
 inventoryRouter.patch('/inventory/:id', requireRole('admin'), async (req, res) => {
   const parsed = PatchBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const { db } = await getDb();

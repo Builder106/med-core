@@ -37,7 +37,7 @@ voiceRouter.post('/transcribe', upload.single('audio'), async (req, res) => {
   });
   const parsed = Body.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   if (!req.file) {
@@ -128,7 +128,7 @@ const NoteBody = z.object({
 voiceRouter.post('/consultation-notes', async (req, res) => {
   const parsed = NoteBody.safeParse(req.body);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
+    res.status(400).json({ error: z.treeifyError(parsed.error) });
     return;
   }
   const sections = parsed.data.transcript
