@@ -3,7 +3,7 @@ import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
 export function createMockMediaQueryList(query: string, matches = false): MediaQueryList {
-  return {
+  const mediaQueryList = {
     matches,
     media: query,
     onchange: null,
@@ -11,6 +11,7 @@ export function createMockMediaQueryList(query: string, matches = false): MediaQ
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(() => true),
   };
+  return mediaQueryList as unknown as MediaQueryList;
 }
 
 afterEach(() => {
