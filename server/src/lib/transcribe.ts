@@ -157,7 +157,10 @@ async function transcribeWithGemini(
         .trim() || null
     );
   } catch (error) {
-    console.error('[gemini] transcription failed', error instanceof Error ? error.message : 'unknown error');
+    console.error(
+      '[gemini] transcription failed',
+      error instanceof Error ? error.message : 'unknown error'
+    );
     return null;
   } finally {
     if (uploadedFile) await deleteGeminiAudio(apiKey, uploadedFile.name);
