@@ -13,7 +13,7 @@ const Schema = z.object({
   WEB_PUSH_PUBLIC_KEY: z.string().optional(),
   WEB_PUSH_PRIVATE_KEY: z.string().optional(),
   WEB_PUSH_CONTACT: z.string().default('mailto:demo@medcore.local'),
-  OPENAI_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
   OPENROUTER_API_KEY: z.string().optional(),
   GROQ_API_KEY: z.string().optional(),
   DATABASE_ENCRYPTION_KEY: z.string().optional(),

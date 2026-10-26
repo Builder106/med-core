@@ -212,7 +212,7 @@ export async function transcribe(
   return (await res.json()) as {
     id: string;
     transcript: string;
-    provider: 'openai' | 'mock';
+    provider: 'gemini' | 'groq' | 'mock';
     audioExpiresAt: number;
   };
 }

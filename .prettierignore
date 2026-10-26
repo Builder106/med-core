@@ -13,3 +13,4 @@ coverage/
 *.yaml
 *.yml
 server/
+assets/diagrams/

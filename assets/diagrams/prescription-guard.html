@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MedCore prescription interaction guard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+:root { color-scheme: light dark; --bg: #ffffff; --ink: #1f2328; --muted: #59636e; --edge: #59636e; --box: #8c959f; --group: #d1d9e0; --groupfill: #f6f8fa; --accent: #0969da; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0d1117; --ink: #f0f6fc; --muted: #9198a1; --edge: #9198a1; --box: #656c76; --group: #3d444d; --groupfill: #151b23; --accent: #4493f8; } }
+html, body { margin: 0; background: var(--bg); }
+main { max-width: 582px; margin: 0 auto; }
+svg { display: block; width: 100%; height: auto; }
+text { font-family: "IBM Plex Sans", system-ui, sans-serif; fill: var(--ink); }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.muted { fill: var(--muted); }
+.accent-text { fill: var(--accent); }
+.bg, .halo { fill: var(--bg); }
+.node { fill: var(--bg); stroke-width: 1.25; }
+.node.box { stroke: var(--box); }
+.node.accent { stroke: var(--accent); stroke-width: 2; }
+.group { fill: var(--groupfill); stroke: var(--group); }
+.boundary { fill: none; stroke: var(--box); stroke-dasharray: 6 6; }
+.edge { fill: none; stroke: var(--edge); stroke-width: 1.5; }
+.edge.accent { stroke: var(--accent); stroke-width: 2; }
+.edge.dashed { stroke-dasharray: 6 5; }
+.lifeline { fill: none; stroke: var(--group); stroke-dasharray: 4 5; }
+.tip { fill: var(--edge); }
+.tip-accent { fill: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 582 407" role="img" aria-labelledby="diagram-title diagram-desc">
+<title id="diagram-title">MedCore prescription interaction guard</title>
+<desc id="diagram-desc">A new prescription is checked against every active prescription for the patient through OpenFDA, RxNorm, or a fallback table. If any pair is critical, the API refuses the save: 409 when the doctor has not acknowledged the interaction, 400 when no PIN is sent, and 403 when the PIN is wrong. Otherwise, or once the doctor acknowledges it with a valid PIN, the API saves the prescription, records the interaction events, and returns 201.</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="tip" d="M0,0 L10,5 L0,10 Z"/></marker>
+<marker id="arrow-accent" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="tip-accent" d="M0,0 L10,5 L0,10 Z"/></marker>
+</defs>
+<rect class="bg" width="582" height="407"/>
+<rect class="node box" x="16" y="16" width="250" height="67" rx="6"/>
+<text x="30" y="43" font-size="16" font-weight="600">New prescription</text>
+<text x="30" y="64" font-size="14" class="muted mono">POST /api/prescriptions</text>
+<rect class="node box" x="16" y="115" width="250" height="67" rx="6"/>
+<text x="30" y="142" font-size="16" font-weight="600">Check each active drug</text>
+<text x="30" y="163" font-size="14" class="muted">OpenFDA, RxNorm, or fallback</text>
+<rect class="node accent" x="16" y="214" width="250" height="67" rx="6"/>
+<text x="30" y="241" font-size="16" font-weight="600">Critical interaction?</text>
+<text x="30" y="262" font-size="14" class="muted">needs ack and doctor PIN</text>
+<rect class="node box" x="16" y="324" width="250" height="67" rx="6"/>
+<text x="30" y="351" font-size="16" font-weight="600">Save and return 201</text>
+<text x="30" y="372" font-size="14" class="muted">interaction events recorded</text>
+<rect class="node box" x="346" y="214" width="220" height="88" rx="6"/>
+<text x="360" y="241" font-size="16" font-weight="600">Refuse the save</text>
+<text x="360" y="262" font-size="14" class="muted">409 not acknowledged</text>
+<text x="360" y="283" font-size="14" class="muted">400 or 403 PIN problem</text>
+<path class="edge" d="M141,83 L141,115" marker-end="url(#arrow)"/>
+<path class="edge" d="M141,182 L141,214" marker-end="url(#arrow)"/>
+<path class="edge accent" d="M141,281 L141,324" marker-end="url(#arrow-accent)"/>
+<rect class="halo" x="145" y="294.5" width="133.44" height="19"/>
+<text x="149" y="307.5" font-size="14" class="label accent-text">no, or valid PIN</text>
+<path class="edge dashed" d="M266,247.5 L346,247.5" marker-end="url(#arrow)"/>
+<rect class="halo" x="274.56" y="226.5" width="62.88" height="19"/>
+<text x="306" y="239.5" font-size="14" class="label" text-anchor="middle">blocked</text>
+</svg>
+</main>
+<script type="application/json" id="diagram-spec">
+{
+  "title": "MedCore prescription interaction guard",
+  "desc": "A new prescription is checked against every active prescription for the patient through OpenFDA, RxNorm, or a fallback table. If any pair is critical, the API refuses the save: 409 when the doctor has not acknowledged the interaction, 400 when no PIN is sent, and 403 when the PIN is wrong. Otherwise, or once the doctor acknowledges it with a valid PIN, the API saves the prescription, records the interaction events, and returns 201.",
+  "width": 720,
+  "nodes": [
+    {
+      "id": "post",
+      "x": 16,
+      "y": 16,
+      "w": 250,
+      "title": "New prescription",
+      "lines": [
+        {
+          "text": "POST /api/prescriptions",
+          "mono": true
+        }
+      ]
+    },
+    {
+      "id": "check",
+      "x": 16,
+      "y": 115,
+      "w": 250,
+      "title": "Check each active drug",
+      "lines": [
+        "OpenFDA, RxNorm, or fallback"
+      ]
+    },
+    {
+      "id": "guard",
+      "x": 16,
+      "y": 214,
+      "w": 250,
+      "title": "Critical interaction?",
+      "lines": [
+        "needs ack and doctor PIN"
+      ],
+      "accent": true
+    },
+    {
+      "id": "save",
+      "x": 16,
+      "y": 324,
+      "w": 250,
+      "title": "Save and return 201",
+      "lines": [
+        "interaction events recorded"
+      ]
+    },
+    {
+      "id": "refuse",
+      "x": 346,
+      "y": 214,
+      "w": 220,
+      "title": "Refuse the save",
+      "lines": [
+        "409 not acknowledged",
+        "400 or 403 PIN problem"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "post.b",
+      "to": "check.t"
+    },
+    {
+      "from": "check.b",
+      "to": "guard.t"
+    },
+    {
+      "from": "guard.b",
+      "to": "save.t",
+      "label": "no, or valid PIN",
+      "accent": true
+    },
+    {
+      "from": "guard.r@0.5",
+      "to": [
+        346,
+        247.5
+      ],
+      "label": "blocked",
+      "dashed": true
+    }
+  ]
+}
+</script>
+</body>
+</html>

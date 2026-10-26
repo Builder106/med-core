@@ -10,7 +10,7 @@ process.env.SESSION_SECRET = 'test-session-secret-at-least-32-chars-long-ok';
 delete process.env.DAILY_API_KEY;
 delete process.env.DAILY_DOMAIN;
 delete process.env.GROQ_API_KEY;
-delete process.env.OPENAI_API_KEY;
+delete process.env.GEMINI_API_KEY;
 delete process.env.OPENROUTER_API_KEY;
 delete process.env.AT_API_KEY;
 
@@ -176,8 +176,8 @@ describe('Reminders + adherence (F5)', () => {
 });
 
 describe('Voice transcription (F2)', () => {
-  it('accepts audio upload and returns mock transcript when no OpenAI key', async () => {
-    delete process.env.OPENAI_API_KEY;
+  it('accepts audio upload and returns mock transcript when no transcription key', async () => {
+    delete process.env.GEMINI_API_KEY;
     const res = await agent
       .post('/api/transcribe')
       .field('patientId', 'PAT-001')

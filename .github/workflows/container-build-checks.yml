@@ -1,0 +1,41 @@
+name: Container Build Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+            arch_tag: amd64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            arch_tag: arm64
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Build image without publishing
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          push: false
+          provenance: false
+          cache-from: type=gha,scope=${{ matrix.arch_tag }}
+
+  manifest:
+    name: Create multi-arch manifest
+    if: ${{ false }}
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "Manifest publication runs in the push-triggered Deploy workflow."

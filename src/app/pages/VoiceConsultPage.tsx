@@ -26,7 +26,7 @@ export function VoiceConsultPage() {
   const [consented, setConsented] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [transcript, setTranscript] = useState('');
-  const [provider, setProvider] = useState<'openai' | 'mock' | null>(null);
+  const [provider, setProvider] = useState<'gemini' | 'groq' | 'mock' | null>(null);
   const [recordingId, setRecordingId] = useState<string | null>(null);
   const [recordings, setRecordings] = useState<Recording[]>([]);
   const [note, setNote] = useState({
@@ -259,7 +259,7 @@ export function VoiceConsultPage() {
         <section className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm uppercase tracking-widest text-[#5B5149]">
-              Transcript · {provider === 'openai' ? 'Whisper' : 'mock'}
+              Transcript | {provider === 'gemini' ? 'Gemini' : provider === 'groq' ? 'Groq Whisper' : 'mock'}
             </h2>
             {audioUrl && <audio src={audioUrl} controls className="max-w-xs" />}
           </div>

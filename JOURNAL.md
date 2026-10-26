@@ -1,8 +1,52 @@
 # JOURNAL — MedCore
 
+## 2026-10-26: Build container images in pull requests #ci #decision
+
+The main ruleset required both platform image builds and the multi-arch
+manifest, but the Deploy workflow created those checks only after a push to
+main. Dependabot PRs therefore waited on checks that never ran. Added PR
+checks that build both platforms without logging in to GHCR or pushing images.
+GitHub marks the manifest check as successful when skipped, so manifest
+publication and the VM deploy stay limited to main pushes.
+
+## 2026-10-26: Restored production API after disk exhaustion #incident
+
+The VM reboot stopped the existing containers, then
+`/var/lib/medcore/up.sh` failed to pull the new `main` image because `/var` had
+only 4.9 MB free on its 5.7 GB filesystem. Docker overlay layers used 4.1 GB,
+`/var/log/journal` occupied 1.5 GB by `du`, and the separate data disk was 1%
+used. Docker reported 3.746 GB reclaimable across 66 images, including 62
+dangling images.
+
+Pruned dangling images only, keeping tagged images in place. Docker reclaimed
+3.081 GB and `/var` had 3.4 GB free. No journal files were removed. The
+[recovery deploy](https://github.com/Builder106/med-core/actions/runs/40364453753)
+built both architectures for `7313ccd5fe77ad320d1d5eb093c09acce7366373`, reset
+the VM, and passed the health gate. A public `/api/health` request returned
+`{"ok":true}`.
+
+At the time, the health response reported `openai:false` because the route
+checked `OPENAI_API_KEY`; that flag did not indicate API availability.
+
+## 2026-10-26: Use Gemini for voice transcription #decision
+
+The source keeps Groq as the primary provider for `/api/transcribe` when
+`GROQ_API_KEY` is set. Gemini replaces OpenAI as the fallback when Groq is
+unset, and the mock transcript remains the final fallback. AI summaries and
+risk flags continue to use `OPENROUTER_API_KEY`. Production has Groq set and
+Gemini unset, so this preserves its current transcription provider.
+
 ## 2026-10-23: Typecheck the frontend in CI #ci #decision
 
 CI now runs the frontend's strict TypeScript check. Typed ESLint flags deprecated APIs in both projects, rejects explicit `any`, and limits explicit `unknown` in production source.
+
+## 2026-10-19: Merge the README flow figures into one guard #decision
+
+The four sequence figures (chart, summary, interaction check, outcome) used the cream template and spent most of their space on plain request and response pairs. The chart and summary flows are now two sentences, and one figure shows the part worth drawing: a critical interaction blocks the save with 409, 400, or 403 until the doctor acknowledges it with a valid PIN, as `routes/prescriptions.ts` does it.
+
+## 2026-10-13: Redrew the README flow #decision
+
+The README's 26-message sequence is split into chart, AI summary, interaction check, and prescription outcome panels. The two duplicated save and 201-return messages from the original critical and safe branches are merged into a common accepted path. The critical 409 and PIN retry remain inside an optional fragment; the text names the noncritical path, session audit, AI risk flags, and final chart update.
 
 ## 2026-09-22: Added a server TypeScript 6/7 bridge #decision
 

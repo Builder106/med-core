@@ -14,7 +14,7 @@
 [![FHIR](https://img.shields.io/badge/FHIR-R4-orange.svg)](server/src/lib/fhir-mappers.ts)
 [![Yale AIS](https://img.shields.io/badge/Yale%20AIS%20IV-Winner-DAB776.svg)](https://www.yaleafricainnovation.org/)
 
-MedCore is a centralised digital health records platform for African healthcare providers — a **Vite + React PWA**front-end with a**Node + Express + SQLite (libSQL)** API. It implements the [PRD's eight features](docs/PRD.md) end-to-end with FHIR-shaped resources, RBAC-gated access, and an AI assist layer that summarises patient context and surfaces risk flags. Every external integration (Daily.co, OpenAI Whisper, Africa's Talking, OpenFDA, Web Push) ships with a working mock so the demo runs offline.
+MedCore is a centralised digital health records platform for African healthcare providers. The Vite + React PWA connects to a Node + Express + SQLite (libSQL) API. It implements the [PRD's eight features](docs/PRD.md) end to end with FHIR-shaped resources, RBAC-gated access, and an AI assist layer that summarises patient context and surfaces risk flags. Groq and Gemini provide voice transcription when configured; every external integration has a working mock, so the demo runs offline.
 
 ## 🏆 Recognition
 
@@ -58,47 +58,16 @@ PINs are configurable in `server/.env`(see`server/.env.example`). For production
 
 ## How it works
 
-```mermaid
-sequenceDiagram
-  actor Doctor
-  participant PWA as PWA<br/>(Vite + React)
-  participant API as Express API
-  participant DB as SQLite<br/>(libSQL)
-  participant Ext as External APIs<br/>(OpenFDA · Daily · AT · Whisper)
-  participant AI as AI Layer<br/>(OpenRouter · Groq)
+The doctor opens a chart through a session-guarded API call, and SQLite returns the patient's medications, labs, and encounters. An optional summary request (`POST /api/ai/summarize`) sends that context to the AI layer and returns a summary with risk flags.
 
-  Doctor->>PWA: Open patient chart
-  PWA->>API: GET /api/patients/:id<br/>(session cookie)
-  API->>API: requireApiSession + audit
-  API->>DB: SELECT patient, meds, labs, encounters
-  DB-->>API: rows
-  API-->>PWA: 200 JSON
-  PWA-->>Doctor: Render chart
+A new prescription is checked against every active one before it is saved. A critical interaction stops the save unless the doctor acknowledges it and enters their PIN:
 
-  Doctor->>PWA: Request AI summary
-  PWA->>API: POST /api/ai/summarize
-  API->>AI: Prompt with patient context
-  AI-->>API: Summary + risk flags
-  API-->>PWA: 200 JSON
-  PWA-->>Doctor: Show AI panel
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/diagrams/prescription-guard-dark.png">
+  <img src="assets/diagrams/prescription-guard.png" alt="A new prescription is checked against each active drug through OpenFDA, RxNorm, or a fallback. A critical interaction blocks the save with 409 if it is not acknowledged, or 400 or 403 if the PIN is missing or wrong. Otherwise the API saves the prescription, records the interaction events, and returns 201." width="582">
+</picture>
 
-  Doctor->>PWA: Prescribe new drug
-  PWA->>API: POST /api/prescriptions
-  API->>Ext: OpenFDA interaction check
-  Ext-->>API: critical / warning / none
-  alt critical, no ack
-    API-->>PWA: 409 critical_interaction
-    PWA-->>Doctor: Modal: override w/ PIN?
-    Doctor->>PWA: Acknowledge + PIN
-    PWA->>API: POST /api/prescriptions (ack)
-    API->>DB: INSERT prescription + audit
-    API-->>PWA: 201 created
-  else safe
-    API->>DB: INSERT prescription + audit
-    API-->>PWA: 201 created
-  end
-  PWA-->>Doctor: Updated chart
-```
+[Edit the diagram](assets/diagrams/prescription-guard.html).
 
 All external integrations fall back to mocks when API keys are absent, so the canonical journey above works offline.
 
@@ -182,7 +151,8 @@ Copy `server/.env.example`to`server/.env` and fill in only the integrations you 
 | Variable | Purpose | Fallback when empty |
 | --- | --- | --- |
 | `OPENROUTER_API_KEY` | AI summaries and risk flags | Returns a deterministic mock summary |
-| `GROQ_API_KEY`/`OPENAI_API_KEY` | Whisper transcription (F2) | Returns realistic mock transcripts |
+| `GROQ_API_KEY` | Primary voice transcription | Uses Gemini if unset, then a mock transcript |
+| `GEMINI_API_KEY` | Voice transcription fallback when Groq is unset | Uses a mock transcript if unset |
 | `DAILY_API_KEY`/`DAILY_DOMAIN` | Video rooms (F3) | Falls back to a public Jitsi room |
 | `AT_API_KEY` | SMS send (F4 & F5) | Logs to a mock outbox |
 | `WEB_PUSH_PUBLIC_KEY`/`WEB_PUSH_PRIVATE_KEY` | Push reminders (F5) | In-memory fake send |

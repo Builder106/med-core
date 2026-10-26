@@ -10,7 +10,8 @@ healthRouter.get('/health', (_req, res) => {
     service: 'medcore-api',
     time: new Date().toISOString(),
     integrations: {
-      openai: Boolean(env.OPENAI_API_KEY),
+      groq: Boolean(env.GROQ_API_KEY),
+      gemini: Boolean(env.GEMINI_API_KEY),
       daily: Boolean(env.DAILY_API_KEY),
       africasTalking: Boolean(env.AT_API_KEY),
       webPush: pushAvailable(),
