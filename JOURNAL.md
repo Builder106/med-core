@@ -1,5 +1,14 @@
 # JOURNAL — MedCore
 
+## 2026-10-26: Build container images in pull requests #ci #decision
+
+The main ruleset required both platform image builds and the multi-arch
+manifest, but the Deploy workflow created those checks only after a push to
+main. Dependabot PRs therefore waited on checks that never ran. Added PR
+checks that build both platforms without logging in to GHCR or pushing images.
+GitHub marks the manifest check as successful when skipped, so manifest
+publication and the VM deploy stay limited to main pushes.
+
 ## 2026-10-19: Merge the README flow figures into one guard #decision
 
 The four sequence figures (chart, summary, interaction check, outcome) used the cream template and spent most of their space on plain request and response pairs. The chart and summary flows are now two sentences, and one figure shows the part worth drawing: a critical interaction blocks the save with 409, 400, or 403 until the doctor acknowledges it with a valid PIN, as `routes/prescriptions.ts` does it.
