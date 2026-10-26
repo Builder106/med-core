@@ -9,6 +9,33 @@ checks that build both platforms without logging in to GHCR or pushing images.
 GitHub marks the manifest check as successful when skipped, so manifest
 publication and the VM deploy stay limited to main pushes.
 
+## 2026-10-26: Restored production API after disk exhaustion #incident
+
+The VM reboot stopped the existing containers, then
+`/var/lib/medcore/up.sh` failed to pull the new `main` image because `/var` had
+only 4.9 MB free on its 5.7 GB filesystem. Docker overlay layers used 4.1 GB,
+`/var/log/journal` occupied 1.5 GB by `du`, and the separate data disk was 1%
+used. Docker reported 3.746 GB reclaimable across 66 images, including 62
+dangling images.
+
+Pruned dangling images only, keeping tagged images in place. Docker reclaimed
+3.081 GB and `/var` had 3.4 GB free. No journal files were removed. The
+[recovery deploy](https://github.com/Builder106/med-core/actions/runs/40364453753)
+built both architectures for `7313ccd5fe77ad320d1d5eb093c09acce7366373`, reset
+the VM, and passed the health gate. A public `/api/health` request returned
+`{"ok":true}`.
+
+At the time, the health response reported `openai:false` because the route
+checked `OPENAI_API_KEY`; that flag did not indicate API availability.
+
+## 2026-10-26: Use Gemini for voice transcription #decision
+
+The source keeps Groq as the primary provider for `/api/transcribe` when
+`GROQ_API_KEY` is set. Gemini replaces OpenAI as the fallback when Groq is
+unset, and the mock transcript remains the final fallback. AI summaries and
+risk flags continue to use `OPENROUTER_API_KEY`. Production has Groq set and
+Gemini unset, so this preserves its current transcription provider.
+
 ## 2026-10-19: Merge the README flow figures into one guard #decision
 
 The four sequence figures (chart, summary, interaction check, outcome) used the cream template and spent most of their space on plain request and response pairs. The chart and summary flows are now two sentences, and one figure shows the part worth drawing: a critical interaction blocks the save with 409, 400, or 403 until the doctor acknowledges it with a valid PIN, as `routes/prescriptions.ts` does it.
@@ -200,21 +227,3 @@ Don't worry about polish. The point is the raw material; the polished retrospect
 ## 2026-09-17 - Any/Unknown remediation baseline `#fix`
 
 Aligned the root flat-config packages at ESLint 9, added separate root and server typecheck scripts/configuration, enabled `no-explicit-any`, and added typed frontend/server test helpers without changing runtime behavior. The no-`skipLibCheck` baseline is currently blocked by missing direct Node and React DOM declaration packages plus pre-existing calendar, chart, resizable-panel, Vite, and React Router declaration incompatibilities; these are dependency-baseline issues, not Any/Unknown remediation changes.
-## 2026-10-26: Restored production API after disk exhaustion #incident
-
-The VM reboot stopped the existing containers, then
-`/var/lib/medcore/up.sh` failed to pull the new `main` image because `/var` had
-only 4.9 MB free on its 5.7 GB filesystem. Docker overlay layers used 4.1 GB,
-`/var/log/journal` occupied 1.5 GB by `du`, and the separate data disk was 1%
-used. Docker reported 3.746 GB reclaimable across 66 images, including 62
-dangling images.
-
-Pruned dangling images only, keeping tagged images in place. Docker reclaimed
-3.081 GB and `/var` had 3.4 GB free. No journal files were removed. The
-[recovery deploy](https://github.com/Builder106/med-core/actions/runs/40364453753)
-built both architectures for `7313ccd5fe77ad320d1d5eb093c09acce7366373`, reset
-the VM, and passed the health gate. A public `/api/health` request returned
-`{"ok":true}`.
-
-At the time, the health response reported `openai:false` because the route
-checked `OPENAI_API_KEY`; that flag did not indicate API availability.
