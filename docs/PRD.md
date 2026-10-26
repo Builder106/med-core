@@ -301,7 +301,7 @@ Patient side (in messages screen):
 
 Technical:  
 \- Use Web Speech API for in-browser capture  
-\- POST audio to /api/transcribe — use Whisper API (OpenAI) on the backend  
+\- POST audio to /api/transcribe; use Groq when GROQ_API_KEY is configured, with Gemini as the fallback  
 \- Store audio encrypted, auto-delete after 30 days. Keep transcripts permanently.  
 \- Show on every recording screen: "Audio deleted after 30 days. Transcript retained permanently in your medical record."
 

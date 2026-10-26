@@ -14,7 +14,7 @@
 [![FHIR](https://img.shields.io/badge/FHIR-R4-orange.svg)](server/src/lib/fhir-mappers.ts)
 [![Yale AIS](https://img.shields.io/badge/Yale%20AIS%20IV-Winner-DAB776.svg)](https://www.yaleafricainnovation.org/)
 
-MedCore is a centralised digital health records platform for African healthcare providers — a **Vite + React PWA**front-end with a**Node + Express + SQLite (libSQL)** API. It implements the [PRD's eight features](docs/PRD.md) end-to-end with FHIR-shaped resources, RBAC-gated access, and an AI assist layer that summarises patient context and surfaces risk flags. Every external integration (Daily.co, OpenAI Whisper, Africa's Talking, OpenFDA, Web Push) ships with a working mock so the demo runs offline.
+MedCore is a centralised digital health records platform for African healthcare providers. The Vite + React PWA connects to a Node + Express + SQLite (libSQL) API. It implements the [PRD's eight features](docs/PRD.md) end to end with FHIR-shaped resources, RBAC-gated access, and an AI assist layer that summarises patient context and surfaces risk flags. Groq and Gemini provide voice transcription when configured; every external integration has a working mock, so the demo runs offline.
 
 ## 🏆 Recognition
 
@@ -151,7 +151,8 @@ Copy `server/.env.example`to`server/.env` and fill in only the integrations you 
 | Variable | Purpose | Fallback when empty |
 | --- | --- | --- |
 | `OPENROUTER_API_KEY` | AI summaries and risk flags | Returns a deterministic mock summary |
-| `GROQ_API_KEY`/`OPENAI_API_KEY` | Whisper transcription (F2) | Returns realistic mock transcripts |
+| `GROQ_API_KEY` | Primary voice transcription | Uses Gemini if unset, then a mock transcript |
+| `GEMINI_API_KEY` | Voice transcription fallback when Groq is unset | Uses a mock transcript if unset |
 | `DAILY_API_KEY`/`DAILY_DOMAIN` | Video rooms (F3) | Falls back to a public Jitsi room |
 | `AT_API_KEY` | SMS send (F4 & F5) | Logs to a mock outbox |
 | `WEB_PUSH_PUBLIC_KEY`/`WEB_PUSH_PRIVATE_KEY` | Push reminders (F5) | In-memory fake send |

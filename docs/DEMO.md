@@ -51,7 +51,7 @@ Copy `server/.env.example`to`server/.env` on the laptop and fill only what you w
 
 | Feature                  | Env vars                                                                           |
 | ------------------------ | ---------------------------------------------------------------------------------- |
-| Real Whisper transcripts | `OPENAI_API_KEY`                                                                   |
+| Real speech transcripts  | `GROQ_API_KEY`; `GEMINI_API_KEY` is the fallback when Groq is unset               |
 | Real Daily.co rooms      | `DAILY_API_KEY`, `DAILY_DOMAIN`                                                    |
 | Real SMS round-trip      | `AT_API_KEY`, `AT_USERNAME`, `DEMO_DOCTOR_PHONE=+1yourmobile`                      |
 | Real push notifications  | `WEB_PUSH_PUBLIC_KEY`, `WEB_PUSH_PRIVATE_KEY` (`npx web-push generate-vapid-keys`) |
@@ -170,7 +170,7 @@ Doctors in African clinics often consult bedside with a phone, not a laptop. The
 
 ### Talking point
 
-"Audio goes over HTTPS to `/api/transcribe`, which hits OpenAI Whisper with a fallback to a mock if no key. The transcript is parsed into SOAP sections. Audio is encrypted at rest and purged after 30 days."
+"Audio goes over HTTPS to `/api/transcribe`. Groq handles transcription when `GROQ_API_KEY` is configured; Gemini is used if it is not, then a mock transcript. The transcript is parsed into SOAP sections. Audio is encrypted at rest and purged after 30 days."
 
 ---
 
