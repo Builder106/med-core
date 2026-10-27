@@ -1,5 +1,9 @@
 # JOURNAL — MedCore
 
+## 2026-10-27: Check both TypeScript projects and lockfiles in CI #ci #decision
+
+CI now runs the root TypeScript check and both server compiler checks. It also audits the root and server lockfiles. This follows the repository's TypeScript 6/7 bridge and keeps dependency checks scoped to each package.
+
 ## 2026-10-26: Build container images in pull requests #ci #decision
 
 The main ruleset required both platform image builds and the multi-arch

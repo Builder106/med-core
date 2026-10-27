@@ -61,10 +61,18 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npm --prefix server ci
+      - name: Audit frontend dependencies
+        run: npm audit --audit-level=high
+      - name: Audit server dependencies
+        run: npm --prefix server audit --audit-level=high
       - name: Open-source license compliance scan (frontend)
         run: npx license-checker --summary --production
+      - name: Typecheck frontend
+        run: npm run typecheck
       - name: Typecheck server
         run: npm --prefix server run typecheck
+      - name: Typecheck server with TypeScript 6
+        run: npm --prefix server run typecheck:ts6
 
   lint-server:
     name: Lint (server)
