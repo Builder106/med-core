@@ -235,3 +235,7 @@ Don't worry about polish. The point is the raw material; the polished retrospect
 ## 2026-09-17 - Any/Unknown remediation baseline `#fix`
 
 Aligned the root flat-config packages at ESLint 9, added separate root and server typecheck scripts/configuration, enabled `no-explicit-any`, and added typed frontend/server test helpers without changing runtime behavior. The no-`skipLibCheck` baseline is currently blocked by missing direct Node and React DOM declaration packages plus pre-existing calendar, chart, resizable-panel, Vite, and React Router declaration incompatibilities; these are dependency-baseline issues, not Any/Unknown remediation changes.
+
+## 2026-10-28 - Audit gate and unused UI wrappers `#fix` `#decision`
+
+The new high-severity audit steps failed on transitive advisories (fast-uri, zod, serialize-javascript, brace-expansion, body-parser), and they hid the frontend typecheck step, which had never run in CI. Refreshed both lockfiles in range and removed the calendar, chart, and resizable shadcn wrappers with their react-day-picker and react-resizable-panels dependencies, since nothing imported them and they targeted old major APIs. recharts stays because two pages import it directly. Re-add them with the shadcn CLI if a feature needs them. Vite config now imports defineConfig from vitest/config.
