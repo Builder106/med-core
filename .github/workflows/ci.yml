@@ -3,8 +3,16 @@ name: CI
 on:
   push:
     branches: [main, staging]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.markdownlint*'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.markdownlint*'
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -155,9 +163,22 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --legacy-peer-deps
-      - run: npm --prefix server ci
-      - name: Install Playwright browsers
+      - run: npm --prefix server ci      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: Install Playwright Chromium + system deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright system deps only (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
       - name: Run E2E suite
         run: npm run e2e
       - name: Run automated accessibility audit
