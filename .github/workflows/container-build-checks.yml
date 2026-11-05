@@ -3,9 +3,17 @@ name: Container Build Checks
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.markdownlint*'
 
 permissions:
   contents: read
+
+concurrency:
+  group: container-checks-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
