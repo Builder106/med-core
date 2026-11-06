@@ -16,6 +16,10 @@
 
 MedCore is a centralised digital health records platform for African healthcare providers. The Vite + React PWA connects to a Node + Express + SQLite (libSQL) API. It implements the [PRD's eight features](docs/PRD.md) end to end with FHIR-shaped resources, RBAC-gated access, and an AI assist layer that summarises patient context and surfaces risk flags. Groq and Gemini provide voice transcription when configured; every external integration has a working mock, so the demo runs offline.
 
+<p align="center">
+  <img src="assets/screenshot.png" alt="The MedCore doctor workspace dashboard for Dr. Wanjiku Njeri. A sidebar lists the clinical tools. The main area has patient lookup, an appointment queue, a unified timeline, an AI advisory panel, a referral tracker and a safety checklist." width="880">
+</p>
+
 ## 🏆 Recognition
 
 **Winner — [Yale Africa Innovation Symposium IV](https://www.yaleafricainnovation.org/) (April 16–18, 2026)**, built within the **Technology & AI Innovation Lab** track under the symposium's "The Pulse of Progress" theme.
