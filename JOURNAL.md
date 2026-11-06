@@ -1,5 +1,9 @@
 # JOURNAL — MedCore
 
+## 2026-11-06: Add OpenGraph and Twitter card metadata #decision
+
+`index.html` had only a title, so links to the public demo unfurled bare. It now has a description, a canonical URL, OpenGraph and Twitter tags, and a 1200x630 card at `public/og.png`. The card pairs the wordmark with the pulse-line mark from the favicon, in the same green and gold. The change is on `staging` and still needs promoting to `main`.
+
 ## 2026-10-27: Check both TypeScript projects and lockfiles in CI #ci #decision
 
 CI now runs the root TypeScript check and both server compiler checks. It also audits the root and server lockfiles. This follows the repository's TypeScript 6/7 bridge and keeps dependency checks scoped to each package.
