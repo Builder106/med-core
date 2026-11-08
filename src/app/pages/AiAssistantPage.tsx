@@ -1,7 +1,8 @@
-import { AlertTriangle, Bot, Send, Sparkles, User } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { patients } from '../data/mock-data';
+import { aiChatStream } from '../services/api';
 
 interface Message {
   id: string;
@@ -10,8 +11,8 @@ interface Message {
   timestamp: Date;
 }
 
-// Simulated AI responses
-const aiResponses: Record<string, string> = {
+// Sample answers shown only when the API cannot be reached (static demo builds).
+const sampleResponses: Record<string, string> = {
   summary: `## Patient Summary — Amina Okafor (PAT-001)
 
 **Demographics:** Female, 38 years old, Blood Type O+, NHIF Kenya
@@ -82,17 +83,30 @@ Based on presenting symptoms of polyuria, polydipsia, and elevated fasting gluco
 };
 
 const quickActions = [
-  { label: 'Summarise patient record', key: 'summary', icon: Sparkles },
-  { label: 'Differential diagnosis', key: 'differential', icon: Bot },
-  { label: 'Drug interaction check', key: 'interactions', icon: AlertTriangle },
+  { label: 'Summarise patient record', key: 'summary' },
+  { label: 'Differential diagnosis', key: 'differential' },
+  { label: 'Drug interaction check', key: 'interactions' },
 ];
+
+type Source = 'model' | 'server-sample' | 'offline-sample';
+
+function escapeHtml(text: string) {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderMarkdown(text: string) {
+  return escapeHtml(text)
+    .replace(/^## (.*)$/gm, '<h3 class="text-[15px] font-semibold mt-3 mb-1">$1</h3>')
+    .replace(/^### (.*)$/gm, '<h4 class="text-[14px] font-semibold mt-2 mb-1">$1</h4>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+}
 
 export function AiAssistantPage() {
   const { currentPatientId } = useApp();
-  const patient = patients.find(p => p.id === currentPatientId);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [source, setSource] = useState<Source | null>(null);
   const [selectedPatient, setSelectedPatient] = useState(currentPatientId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -100,111 +114,105 @@ export function AiAssistantPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const simulateStreaming = (text: string) => {
-    setIsStreaming(true);
-    const msgId = `ai-${Date.now()}`;
-    setMessages(prev => [
-      ...prev,
-      { id: msgId, role: 'assistant', content: '', timestamp: new Date() },
+  const ask = async (question: string, sampleKey: string) => {
+    if (isStreaming) return;
+    const history = [
+      ...messages,
+      { id: `u-${Date.now()}`, role: 'user' as const, content: question, timestamp: new Date() },
+    ];
+    const replyId = `ai-${Date.now()}`;
+    setMessages([
+      ...history,
+      { id: replyId, role: 'assistant', content: '', timestamp: new Date() },
     ]);
-
-    let i = 0;
-    const interval = setInterval(() => {
-      i += Math.floor(Math.random() * 8) + 3;
-      if (i >= text.length) {
-        setMessages(prev => prev.map(m => (m.id === msgId ? { ...m, content: text } : m)));
-        setIsStreaming(false);
-        clearInterval(interval);
-      } else {
-        setMessages(prev =>
-          prev.map(m => (m.id === msgId ? { ...m, content: text.slice(0, i) } : m))
-        );
-      }
-    }, 20);
-  };
-
-  const handleQuickAction = (key: string) => {
-    const userMsg: Message = {
-      id: `u-${Date.now()}`,
-      role: 'user',
-      content: quickActions.find(a => a.key === key)!.label,
-      timestamp: new Date(),
-    };
-    setMessages(prev => [...prev, userMsg]);
-    setTimeout(
-      () =>
-        simulateStreaming(
-          aiResponses[key] || 'I can help with that. Let me analyse the patient record...'
-        ),
-      500
-    );
+    setIsStreaming(true);
+    const append = (text: string) =>
+      setMessages(prev =>
+        prev.map(m => (m.id === replyId ? { ...m, content: m.content + text } : m))
+      );
+    try {
+      const { provider } = await aiChatStream(
+        {
+          patientId: selectedPatient,
+          messages: history.map(m => ({ role: m.role, content: m.content })),
+        },
+        append
+      );
+      setSource(provider === 'openrouter' ? 'model' : 'server-sample');
+    } catch {
+      append(sampleResponses[sampleKey] ?? sampleResponses.summary);
+      setSource('offline-sample');
+    } finally {
+      setIsStreaming(false);
+    }
   };
 
   const handleSend = () => {
-    if (!input.trim() || isStreaming) return;
-    const userMsg: Message = {
-      id: `u-${Date.now()}`,
-      role: 'user',
-      content: input,
-      timestamp: new Date(),
-    };
-    setMessages(prev => [...prev, userMsg]);
+    const question = input.trim();
+    if (!question) return;
     setInput('');
-    setTimeout(() => simulateStreaming(aiResponses.summary), 500);
+    void ask(question, 'summary');
   };
 
   return (
     <div className="max-w-4xl h-[calc(100vh-8rem)] flex flex-col">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-3">
         <div>
-          <h1 className="text-[22px] text-slate-900 flex items-center gap-2">
-            <Bot className="w-6 h-6 text-amber-500" /> AI Clinical Assistant
-          </h1>
-          <p className="text-[12px] text-slate-400">
-            Powered by Claude · Advisory only — verify all suggestions clinically
+          <h1 className="text-[22px] font-semibold text-foreground">AI clinical assistant</h1>
+          <p className="text-[13px] text-muted-foreground">
+            Answers are advisory. Check them against the chart and your own judgement, and do not
+            pass them to patients directly.
           </p>
         </div>
-        <select
-          value={selectedPatient}
-          onChange={e => setSelectedPatient(e.target.value)}
-          className="text-[12px] border border-slate-200 rounded-lg px-3 py-2 bg-white text-slate-600"
+        <label className="text-[13px] text-muted-foreground">
+          <span className="block mb-1">Patient</span>
+          <select
+            value={selectedPatient}
+            onChange={e => {
+              setSelectedPatient(e.target.value);
+              setMessages([]);
+              setSource(null);
+            }}
+            className="af-focus text-[13px] border border-border rounded-md px-3 py-2 bg-card text-foreground"
+          >
+            {patients.map(p => (
+              <option key={p.id} value={p.id}>
+                {p.firstName} {p.lastName} ({p.id})
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {source && source !== 'model' && (
+        <p
+          role="status"
+          className="mb-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[13px] text-amber-950"
         >
-          {patients.map(p => (
-            <option key={p.id} value={p.id}>
-              {p.firstName} {p.lastName} ({p.id})
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Disclaimer */}
-      <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg px-4 py-2 mb-3 flex items-center gap-2">
-        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-        <p className="text-[11px] text-amber-700">
-          AI outputs are advisory. Always apply clinical judgement. Do not share AI outputs with
-          patients directly.
+          {source === 'offline-sample'
+            ? 'The server is unreachable. This is a stored sample answer for Amina Okafor (PAT-001).'
+            : 'No AI model is configured on the server, so this is a sample answer.'}
         </p>
-      </div>
+      )}
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto bg-white rounded-xl border border-slate-200 p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto bg-card rounded-lg border border-border p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-400 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-amber-200/50">
-              <Bot className="w-7 h-7 text-white" />
-            </div>
-            <h3 className="text-[16px] text-slate-900 mb-1">Clinical AI ready</h3>
-            <p className="text-[13px] text-slate-400 mb-6 max-w-sm">
-              Summarise records, flag risks, check interactions, or explore differential diagnoses.
+            <p className="text-[14px] text-foreground mb-1">
+              Ask about the selected patient&apos;s chart.
+            </p>
+            <p className="text-[13px] text-muted-foreground mb-5 max-w-sm">
+              The assistant reads the record, lab results and prescriptions on file.
             </p>
             <div className="flex flex-wrap gap-2 justify-center">
               {quickActions.map(a => (
                 <button
+                  type="button"
                   key={a.key}
-                  onClick={() => handleQuickAction(a.key)}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors text-[13px] border border-amber-200"
+                  onClick={() => void ask(a.label, a.key)}
+                  className="af-focus px-3 py-2 bg-card text-foreground rounded-md hover:bg-muted text-[13px] border border-border"
                 >
-                  <a.icon className="w-4 h-4" /> {a.label}
+                  {a.label}
                 </button>
               ))}
             </div>
@@ -212,96 +220,71 @@ export function AiAssistantPage() {
         )}
 
         {messages.map(msg => (
-          <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
-            {msg.role === 'assistant' && (
-              <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
-                <Bot className="w-4 h-4 text-amber-600" />
-              </div>
-            )}
+          <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : ''}`}>
             <div
-              className={`max-w-[80%] rounded-xl px-4 py-3 ${msg.role === 'user' ? 'bg-purple-600 text-white' : 'bg-gray-50 border border-gray-200'}`}
+              className={`max-w-[85%] rounded-lg px-4 py-3 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border text-foreground'}`}
             >
               {msg.role === 'assistant' ? (
                 <div
-                  className="text-[13px] leading-relaxed prose prose-sm max-w-none whitespace-pre-wrap"
-                  dangerouslySetInnerHTML={{
-                    __html: msg.content
-                      .replace(/## (.*)/g, '<h3 class="text-[15px] mt-3 mb-1">$1</h3>')
-                      .replace(/### (.*)/g, '<h4 class="text-[14px] mt-2 mb-1">$1</h4>')
-                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                      .replace(/⚠️/g, '⚠️')
-                      .replace(/✅/g, '✅')
-                      .replace(/ℹ️/g, 'ℹ️'),
-                  }}
+                  className="text-[14px] leading-relaxed whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
                 />
               ) : (
-                <p className="text-[13px]">{msg.content}</p>
+                <p className="text-[14px]">{msg.content}</p>
               )}
             </div>
-            {msg.role === 'user' && (
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
-                <User className="w-4 h-4 text-purple-600" />
-              </div>
-            )}
           </div>
         ))}
-        {isStreaming && (
-          <div className="flex items-center gap-2 text-amber-600 text-[12px]">
-            <div className="flex gap-1">
-              <span
-                className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce"
-                style={{ animationDelay: '0ms' }}
-              />
-              <span
-                className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce"
-                style={{ animationDelay: '150ms' }}
-              />
-              <span
-                className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce"
-                style={{ animationDelay: '300ms' }}
-              />
-            </div>
-            Generating response...
-          </div>
-        )}
+        <p aria-live="polite" className="text-[13px] text-muted-foreground">
+          {isStreaming ? 'Writing an answer…' : ''}
+        </p>
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Quick actions (when there are messages) */}
       {messages.length > 0 && (
         <div className="flex gap-2 mt-2 overflow-x-auto pb-1">
           {quickActions.map(a => (
             <button
+              type="button"
               key={a.key}
-              onClick={() => handleQuickAction(a.key)}
+              onClick={() => void ask(a.label, a.key)}
               disabled={isStreaming}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors text-[12px] border border-amber-200 whitespace-nowrap disabled:opacity-50"
+              className="af-focus px-3 py-1.5 bg-card text-foreground rounded-md hover:bg-muted text-[13px] border border-border whitespace-nowrap disabled:opacity-50"
             >
-              <a.icon className="w-3.5 h-3.5" /> {a.label}
+              {a.label}
             </button>
           ))}
         </div>
       )}
 
-      {/* Input */}
-      <div className="flex items-center gap-2 mt-3">
+      <form
+        className="flex items-center gap-2 mt-3"
+        onSubmit={e => {
+          e.preventDefault();
+          handleSend();
+        }}
+      >
+        <label htmlFor="ai-question" className="sr-only">
+          Question about this patient
+        </label>
         <input
+          id="ai-question"
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSend()}
-          placeholder="Ask about this patient..."
+          placeholder="Ask about this patient"
           disabled={isStreaming}
-          className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-[14px] outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100 disabled:opacity-50 transition-all"
+          className="flex-1 bg-card border border-input rounded-md px-3 py-2.5 text-[14px] outline-none focus:border-ring focus:ring-2 focus:ring-ring/30 disabled:opacity-50"
         />
         <button
-          onClick={handleSend}
+          type="submit"
+          aria-label="Send question"
           disabled={isStreaming || !input.trim()}
-          className="w-11 h-11 bg-amber-500 text-white rounded-xl flex items-center justify-center hover:bg-amber-600 transition-colors disabled:opacity-50 shadow-sm"
+          className="af-focus w-11 h-11 bg-primary text-primary-foreground rounded-md flex items-center justify-center hover:bg-primary-strong disabled:opacity-50"
         >
-          <Send className="w-5 h-5" />
+          <Send className="w-5 h-5" aria-hidden />
         </button>
-      </div>
+      </form>
     </div>
   );
 }
