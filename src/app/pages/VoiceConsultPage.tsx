@@ -170,8 +170,8 @@ export function VoiceConsultPage() {
   return (
     <div className="max-w-4xl space-y-6">
       <div>
-        <h1 className="text-[22px] text-[#1F1B18] flex items-center gap-2">
-          <Mic className="w-5 h-5 text-[#214838]" />
+        <h1 className="text-[22px] font-semibold text-foreground flex items-center gap-2">
+          <Mic className="w-5 h-5 text-primary" />
           {t('voice.record')}
         </h1>
       </div>
@@ -179,12 +179,12 @@ export function VoiceConsultPage() {
       <ClinicalBanner message={t('voice.consentBody', { days: AUDIO_RETENTION_DAYS })} />
 
       {phase === 'idle' && (
-        <section className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-5 space-y-4">
-          <h2 className="text-sm uppercase tracking-widest text-[#5B5149] flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-[#DAB776]" />
+        <section className="bg-card rounded-xl border border-border p-5 space-y-4">
+          <h2 className="text-[15px] font-semibold text-foreground flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-sidebar-primary" />
             {t('voice.consentTitle')}
           </h2>
-          <p className="text-sm text-[#1F1B18]">
+          <p className="text-sm text-foreground">
             {t('voice.consentBody', { days: AUDIO_RETENTION_DAYS })}
           </p>
           <label className="flex items-center gap-2 text-sm">
@@ -199,24 +199,25 @@ export function VoiceConsultPage() {
             <button
               disabled={!consented}
               onClick={startRecording}
-              className={`af-press af-focus px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${consented ? 'bg-[#214838] text-[#F7F1E6] hover:bg-[#1B3D30]' : 'bg-[#9EA4A0] text-white cursor-not-allowed'}`}
+              className={`af-press af-focus px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${consented ? 'bg-primary text-sidebar-foreground hover:bg-primary-strong' : 'bg-muted-foreground text-white cursor-not-allowed'}`}
             >
               <Mic className="w-4 h-4" />
               {t('voice.record')}
             </button>
-            <span className="text-xs text-[#5B5149]">{t('voice.maxDuration')}</span>
+            <span className="text-xs text-muted-foreground">{t('voice.maxDuration')}</span>
           </div>
         </section>
       )}
 
       {phase === 'recording' && (
-        <section className="af-elevate bg-white rounded-2xl border border-red-300 p-5 space-y-3">
+        <section className="bg-card rounded-xl border border-red-300 p-5 space-y-3">
           <div className="flex items-center gap-3">
-            <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-lg notranslate" translate="no">
+            <span className="rounded bg-red-700 px-2 py-0.5 text-[13px] font-medium text-white">
+              {t('voice.recording')}
+            </span>
+            <span className="text-lg tabular-nums notranslate" translate="no">
               {mm}:{ss}
             </span>
-            <span className="text-xs text-[#5B5149]">{t('voice.recording')}</span>
           </div>
           <button
             onClick={stopRecording}
@@ -229,20 +230,20 @@ export function VoiceConsultPage() {
       )}
 
       {phase === 'stopped' && audioUrl && (
-        <section className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-5 space-y-3">
-          <h2 className="text-sm uppercase tracking-widest text-[#5B5149]">Preview</h2>
+        <section className="bg-card rounded-xl border border-border p-5 space-y-3">
+          <h2 className="text-[15px] font-semibold text-foreground">Preview</h2>
           <audio src={audioUrl} controls className="w-full" />
           <div className="flex items-center gap-2">
             <button
               onClick={uploadAndTranscribe}
-              className="af-press af-focus bg-[#214838] text-[#F7F1E6] px-4 py-2 rounded-lg text-sm flex items-center gap-2"
+              className="af-press af-focus bg-primary text-sidebar-foreground px-4 py-2 rounded-lg text-sm flex items-center gap-2"
             >
               <PlayCircle className="w-4 h-4" />
               {t('voice.generateNote')}
             </button>
             <button
               onClick={reset}
-              className="af-press af-focus px-4 py-2 rounded-lg text-sm text-[#5B5149]"
+              className="af-press af-focus px-4 py-2 rounded-lg text-sm text-muted-foreground"
             >
               {t('common.cancel')}
             </button>
@@ -251,36 +252,39 @@ export function VoiceConsultPage() {
       )}
 
       {phase === 'transcribing' && (
-        <section className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-5 flex items-center gap-3 text-sm text-[#5B5149]">
+        <section className="bg-card rounded-xl border border-border p-5 flex items-center gap-3 text-sm text-muted-foreground">
           <Loader2 className="w-5 h-5 animate-spin" />
           {t('voice.transcribing')}
         </section>
       )}
 
       {phase === 'review' && (
-        <section className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-5 space-y-4">
+        <section className="bg-card rounded-xl border border-border p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm uppercase tracking-widest text-[#5B5149]">
+            <h2 className="text-[15px] font-semibold text-foreground">
               Transcript | {providerLabel}
             </h2>
             {audioUrl && <audio src={audioUrl} controls className="max-w-xs" />}
           </div>
           <ClinicalText
             as="span"
-            className="block text-sm text-[#1F1B18] whitespace-pre-wrap bg-[#FDFAF2] border border-[#E7D9BB] rounded-xl p-3 notranslate"
+            className="block text-sm text-foreground whitespace-pre-wrap bg-muted border border-border rounded-xl p-3 notranslate"
           >
             {transcript}
           </ClinicalText>
 
           <div className="grid sm:grid-cols-2 gap-3">
             {(['chiefComplaint', 'history', 'assessment', 'plan', 'followUp'] as const).map(key => (
-              <label key={key} className="text-xs text-[#5B5149] flex flex-col gap-1 sm:col-span-2">
+              <label
+                key={key}
+                className="text-xs text-muted-foreground flex flex-col gap-1 sm:col-span-2"
+              >
                 {t(`voice.soap.${key}`)}
                 <textarea
                   rows={2}
                   value={note[key]}
                   onChange={e => setNote(n => ({ ...n, [key]: e.target.value }))}
-                  className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm"
+                  className="af-focus rounded-lg border border-border px-3 py-2 text-sm"
                 />
               </label>
             ))}
@@ -289,18 +293,18 @@ export function VoiceConsultPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={onSaveNote}
-              className="af-press af-focus bg-[#214838] text-[#F7F1E6] px-4 py-2 rounded-lg text-sm flex items-center gap-2"
+              className="af-press af-focus bg-primary text-sidebar-foreground px-4 py-2 rounded-lg text-sm flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               {t('common.save')}
             </button>
             <button
               onClick={reset}
-              className="af-press af-focus px-4 py-2 rounded-lg text-sm text-[#5B5149]"
+              className="af-press af-focus px-4 py-2 rounded-lg text-sm text-muted-foreground"
             >
               New recording
             </button>
-            {saveStatus && <span className="text-xs text-[#5B5149]">{saveStatus}</span>}
+            {saveStatus && <span className="text-xs text-muted-foreground">{saveStatus}</span>}
           </div>
         </section>
       )}
@@ -312,16 +316,16 @@ export function VoiceConsultPage() {
       )}
 
       {recordings.length > 0 && (
-        <section className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-5">
-          <h2 className="text-sm uppercase tracking-widest text-[#5B5149] mb-3">Past recordings</h2>
-          <ul className="divide-y divide-[#F3ECE1]">
+        <section className="bg-card rounded-xl border border-border p-5">
+          <h2 className="text-[15px] font-semibold text-foreground mb-3">Past recordings</h2>
+          <ul className="divide-y divide-border">
             {recordings.slice(0, 10).map(r => (
               <li key={r.id} className="py-2">
-                <p className="text-xs text-[#5B5149]">
-                  {new Date(r.createdAt).toLocaleString()} · {r.source} · {r.durationSec ?? '?'}s{' '}
-                  {r.audioPath ? '' : '· audio purged'}
+                <p className="text-xs text-muted-foreground">
+                  {new Date(r.createdAt).toLocaleString()}, {r.source}, {r.durationSec ?? '?'}s{' '}
+                  {r.audioPath ? '' : ', audio purged'}
                 </p>
-                <ClinicalText as="span" className="block text-sm text-[#1F1B18] line-clamp-3">
+                <ClinicalText as="span" className="block text-sm text-foreground line-clamp-3">
                   {r.transcript}
                 </ClinicalText>
                 {r.audioPath && (

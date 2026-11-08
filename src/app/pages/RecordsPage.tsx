@@ -176,58 +176,56 @@ export function RecordsPage() {
   }[] = [
     { key: 'timeline', label: 'Timeline', icon: Clock, count: encounters.length },
     { key: 'prescriptions', label: 'Prescriptions', icon: Pill, count: prescriptions.length },
-    { key: 'labs', label: 'Lab Results', icon: FlaskConical, count: labs.length },
+    { key: 'labs', label: 'Lab results', icon: FlaskConical, count: labs.length },
     { key: 'vaccinations', label: 'Vaccinations', icon: Syringe, count: vaccinations.length },
   ];
 
   return (
     <div className="max-w-5xl space-y-6">
-      <h1 className="text-[22px]">My Medical Records</h1>
-      {loading && <p className="text-[13px] text-gray-500">Loading records…</p>}
+      <h1 className="text-[22px] font-semibold text-foreground">My medical records</h1>
+      {loading && <p className="text-[13px] text-muted-foreground">Loading records…</p>}
 
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
+      <div className="flex gap-1 bg-muted p-1 rounded-lg overflow-x-auto">
         {tabs.map(tb => (
           <button
             key={tb.key}
             onClick={() => setTab(tb.key)}
-            className={`af-tap af-focus inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] transition-colors whitespace-nowrap ${tab === tb.key ? 'bg-white shadow-sm text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`af-tap af-focus inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] transition-colors whitespace-nowrap ${tab === tb.key ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}
           >
             <tb.icon className="w-4 h-4" /> {tb.label}{' '}
-            <span className="text-[11px] bg-gray-200 px-1.5 py-0.5 rounded-full">{tb.count}</span>
+            <span className="text-[12px] bg-border px-1.5 py-0.5 rounded">{tb.count}</span>
           </button>
         ))}
       </div>
 
       {tab === 'timeline' && (
         <div className="relative pl-6">
-          <div className="absolute left-2.5 top-0 bottom-0 w-px bg-teal-200" />
+          <div className="absolute left-2.5 top-0 bottom-0 w-px bg-border" />
           <div className="space-y-4">
             {encounters.map(enc => (
               <div key={enc.id} className="relative">
-                <div
-                  className={`absolute -left-[14px] top-4 w-3 h-3 rounded-full border-2 border-white ${enc.type === 'emergency' ? 'bg-red-500' : enc.type === 'lab' ? 'bg-blue-500' : enc.type === 'vaccination' ? 'bg-green-500' : 'bg-teal-500'}`}
-                />
-                <div className="bg-white rounded-xl border border-gray-200 p-4 ml-2">
+                <div className="absolute -left-[14px] top-4 w-3 h-3 rounded-full border-2 border-card bg-primary" />
+                <div className="bg-card rounded-xl border border-border p-4 ml-2">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-[11px] px-2 py-0.5 rounded-full capitalize ${enc.type === 'emergency' ? 'bg-red-100 text-red-700' : enc.type === 'lab' ? 'bg-blue-100 text-blue-700' : enc.type === 'vaccination' ? 'bg-green-100 text-green-700' : 'bg-teal-100 text-teal-700'}`}
+                        className={`text-[12px] px-2 py-0.5 rounded capitalize ${enc.type === 'emergency' ? 'bg-red-100 text-red-700' : enc.type === 'lab' ? 'bg-blue-100 text-blue-700' : enc.type === 'vaccination' ? 'bg-green-100 text-green-700' : 'bg-accent text-primary'}`}
                       >
                         {enc.type}
                       </span>
-                      <span className="text-[13px] text-gray-500">{enc.date}</span>
+                      <span className="text-[13px] text-muted-foreground">{enc.date}</span>
                     </div>
                   </div>
                   <h3 className="text-[15px]">{enc.diagnosis}</h3>
-                  <p className="text-[13px] text-gray-600 mt-1">{enc.notes}</p>
-                  <p className="text-[12px] text-gray-400 mt-2">
-                    {enc.doctorName} • {enc.facilityName}
+                  <p className="text-[13px] text-muted-foreground mt-1">{enc.notes}</p>
+                  <p className="text-[12px] text-muted-foreground mt-2">
+                    {enc.doctorName}, {enc.facilityName}
                   </p>
                 </div>
               </div>
             ))}
             {!loading && encounters.length === 0 && (
-              <p className="text-[13px] text-gray-400">No encounters recorded.</p>
+              <p className="text-[13px] text-muted-foreground">No encounters recorded.</p>
             )}
           </div>
         </div>
@@ -236,30 +234,30 @@ export function RecordsPage() {
       {tab === 'prescriptions' && (
         <div className="space-y-4">
           {prescriptions.map(rx => (
-            <div key={rx.id} className="bg-white rounded-xl border border-gray-200 p-4">
+            <div key={rx.id} className="bg-card rounded-xl border border-border p-4">
               <div className="flex items-center gap-2 mb-3">
                 <span
-                  className={`text-[11px] px-2 py-0.5 rounded-full ${rx.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}
+                  className={`text-[12px] px-2 py-0.5 rounded ${rx.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'}`}
                 >
                   {rx.status}
                 </span>
-                <span className="text-[12px] text-gray-500">
-                  {rx.date} • {rx.doctorName}
+                <span className="text-[12px] text-muted-foreground">
+                  {rx.date}, {rx.doctorName}
                 </span>
               </div>
               {rx.medications.map((med, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg mb-2 last:mb-0"
+                  className="flex items-start gap-3 p-2 bg-muted rounded-lg mb-2 last:mb-0"
                 >
-                  <Pill className="w-4 h-4 text-teal-500 mt-0.5" />
+                  <Pill className="w-4 h-4 text-primary mt-0.5" />
                   <div>
                     <p className="text-[14px]">
                       {med.name} {med.dosage}
                     </p>
-                    <p className="text-[12px] text-gray-500">
+                    <p className="text-[12px] text-muted-foreground">
                       {med.frequency}
-                      {med.duration ? ` • ${med.duration}` : ''}
+                      {med.duration ? `, ${med.duration}` : ''}
                     </p>
                   </div>
                 </div>
@@ -267,7 +265,7 @@ export function RecordsPage() {
             </div>
           ))}
           {!loading && prescriptions.length === 0 && (
-            <p className="text-[13px] text-gray-400">No prescriptions recorded.</p>
+            <p className="text-[13px] text-muted-foreground">No prescriptions recorded.</p>
           )}
         </div>
       )}
@@ -284,7 +282,7 @@ export function RecordsPage() {
                 header: 'Status',
                 cell: l => (
                   <span
-                    className={`text-[11px] px-2 py-0.5 rounded-full ${l.status === 'critical' ? 'bg-red-100 text-red-700' : l.status === 'high' || l.status === 'low' || l.status === 'abnormal' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}
+                    className={`text-[12px] px-2 py-0.5 rounded ${l.status === 'critical' ? 'bg-red-100 text-red-700' : l.status === 'high' || l.status === 'low' || l.status === 'abnormal' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-700'}`}
                   >
                     {l.status}
                   </span>
@@ -296,7 +294,7 @@ export function RecordsPage() {
           rowKey={l => l.id}
           emptyLabel={loading ? 'Loading…' : 'No lab results'}
           mobileTitle={l => l.testName}
-          mobileSubtitle={l => `${l.date} · ${l.result}`}
+          mobileSubtitle={l => `${l.date}, ${l.result}`}
         />
       )}
 
@@ -305,21 +303,21 @@ export function RecordsPage() {
           {vaccinations.map(v => (
             <div
               key={v.id}
-              className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4"
+              className="bg-card rounded-xl border border-border p-4 flex items-center gap-4"
             >
-              <Syringe className="w-5 h-5 text-green-600" />
+              <Syringe className="w-5 h-5 text-green-700" />
               <div className="flex-1">
                 <p className="text-[14px]">
                   {v.vaccine} — {v.dose}
                 </p>
-                <p className="text-[12px] text-gray-500">
+                <p className="text-[12px] text-muted-foreground">
                   {v.date}
-                  {v.site ? ` • ${v.site}` : ''}
+                  {v.site ? `, ${v.site}` : ''}
                 </p>
               </div>
               {v.nextDue && (
                 <span
-                  className={`text-[11px] px-2 py-1 rounded-full ${new Date(v.nextDue) < new Date() ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}
+                  className={`text-[12px] px-2 py-1 rounded ${new Date(v.nextDue) < new Date() ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}
                 >
                   {new Date(v.nextDue) < new Date() ? 'OVERDUE' : `Next: ${v.nextDue}`}
                 </span>
@@ -327,7 +325,7 @@ export function RecordsPage() {
             </div>
           ))}
           {!loading && vaccinations.length === 0 && (
-            <p className="text-[13px] text-gray-400">No vaccinations recorded.</p>
+            <p className="text-[13px] text-muted-foreground">No vaccinations recorded.</p>
           )}
         </div>
       )}

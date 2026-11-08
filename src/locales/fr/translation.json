@@ -51,13 +51,12 @@
     "checkingSession": "Chargement…",
     "errorInvalid": "ID ou PIN incorrect.",
     "errorLocked": "Compte temporairement verrouillé.",
-    "demoHint": "Démo : Médecin DOC-001 / 4242 · Patient PAT-001 / 1212 · Admin ADM-001 / 3434."
+    "demoHint": "Démo : Médecin DOC-001 / 4242; Patient PAT-001 / 1212; Admin ADM-001 / 3434."
   },
   "sidebar": {
     "doctorWorkspace": "Espace médecin",
     "patientPortal": "Portail patient",
     "facilityAdmin": "Administration",
-    "offlineTagline": "Pile de soins hors-ligne alignée FHIR",
     "signOut": "Déconnexion",
     "clinicalHub": "Hub clinique",
     "patientSearch": "Recherche de patients",

@@ -120,53 +120,53 @@ export function VideoConsultPage() {
   return (
     <div className="lg:space-y-6 max-w-5xl lg:mx-auto">
       <div className="max-lg:hidden">
-        <h1 className="text-2xl text-[#1F1B18] flex items-center gap-2">
-          <Video className="w-6 h-6 text-[#214838]" />
+        <h1 className="text-[22px] font-semibold text-foreground flex items-center gap-2">
+          <Video className="w-6 h-6 text-primary" />
           {t('nav.videoConsult')}
         </h1>
       </div>
       {phase !== 'in' && (
         <div className="lg:hidden mb-2">
-          <h1 className="text-lg font-semibold text-[#1F1B18] flex items-center gap-2">
-            <Video className="w-5 h-5 text-[#214838]" />
+          <h1 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Video className="w-5 h-5 text-primary" />
             {t('nav.videoConsult')}
           </h1>
         </div>
       )}
 
       {phase === 'pre' && (
-        <section className="af-elevate rounded-2xl max-lg:rounded-xl border border-[#D9C8AE] bg-white p-4 max-lg:p-4 space-y-4 max-lg:space-y-3">
-          <h2 className="text-sm uppercase tracking-widest text-[#5B5149]">{t('video.preCall')}</h2>
+        <section className="rounded-xl max-lg:rounded-xl border border-border bg-card p-4 max-lg:p-4 space-y-4 max-lg:space-y-3">
+          <h2 className="text-[15px] font-semibold text-foreground">{t('video.preCall')}</h2>
           <div className="grid lg:grid-cols-2 gap-4 max-lg:gap-3">
             <div className="space-y-3 max-lg:order-2">
-              <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground flex flex-col gap-1">
                 {t('video.namePatient')}
                 <input
                   readOnly
-                  className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2.5 text-sm bg-[#FDFAF2]"
+                  className="af-focus rounded-lg border border-input px-3 py-2.5 text-sm bg-muted"
                   value={currentPatientId}
                 />
               </label>
-              <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground flex flex-col gap-1">
                 {t('video.nameDoctor')}
                 <input
                   readOnly
-                  className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2.5 text-sm bg-[#FDFAF2]"
+                  className="af-focus rounded-lg border border-input px-3 py-2.5 text-sm bg-muted"
                   value={currentUserId}
                 />
               </label>
-              <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground flex flex-col gap-1">
                 {t('video.reason')}
                 <input
-                  className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2.5 text-sm"
+                  className="af-focus rounded-lg border border-input px-3 py-2.5 text-sm"
                   value={reason}
                   onChange={e => setReason(e.target.value)}
                 />
               </label>
-              <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground flex flex-col gap-1">
                 {t('video.bandwidth')}
                 <select
-                  className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2.5 text-sm"
+                  className="af-focus rounded-lg border border-input px-3 py-2.5 text-sm"
                   value={bandwidth}
                   onChange={e => setBandwidth(e.target.value as Bandwidth)}
                 >
@@ -191,21 +191,21 @@ export function VideoConsultPage() {
                   </div>
                 )}
               </div>
-              <div className="text-xs text-[#5B5149] flex flex-wrap gap-2">
+              <div className="text-xs text-muted-foreground flex flex-wrap gap-2">
                 <span
-                  className={`px-2 py-1 rounded-full border ${cameraReady ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}
+                  className={`px-2 py-1 rounded border ${cameraReady ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'}`}
                 >
                   Camera {cameraReady ? 'ok' : 'off'}
                 </span>
                 <span
-                  className={`px-2 py-1 rounded-full border ${micReady ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700'}`}
+                  className={`px-2 py-1 rounded border ${micReady ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'}`}
                 >
                   Mic {micReady ? 'ok' : 'off'}
                 </span>
                 <button
                   type="button"
                   onClick={testDevices}
-                  className="af-press af-focus px-2 py-1 rounded-full border border-[#D9C8AE] bg-[#F7F1E6]"
+                  className="af-press af-focus px-2 py-1 rounded border border-border bg-muted"
                 >
                   {t('video.deviceTest')}
                 </button>
@@ -214,12 +214,12 @@ export function VideoConsultPage() {
           </div>
           <button
             onClick={start}
-            className="af-press af-focus w-full max-lg:min-h-[48px] bg-[#214838] text-[#F7F1E6] px-4 py-3 rounded-xl text-sm flex items-center justify-center gap-2 font-medium"
+            className="af-press af-focus w-full max-lg:min-h-[48px] bg-primary text-sidebar-foreground px-4 py-3 rounded-xl text-sm flex items-center justify-center gap-2 font-medium"
           >
             <Phone className="w-5 h-5" />
             {t('video.startCall')}
           </button>
-          <p className="text-[11px] text-[#5B5149]">{t('video.disclaimer')}</p>
+          <p className="text-[12px] text-muted-foreground">{t('video.disclaimer')}</p>
         </section>
       )}
 
@@ -238,21 +238,17 @@ export function VideoConsultPage() {
                 {t('video.audioOnlyBanner')}
               </div>
             )}
-            <header className="shrink-0 flex items-center justify-between gap-2 px-3 py-2.5 bg-black/55 backdrop-blur-md border-b border-white/10 text-white">
+            <header className="shrink-0 flex items-center justify-between gap-2 px-3 py-2.5 bg-black/80 border-b border-white/10 text-white">
               <span className="flex items-center gap-2 min-w-0 text-[13px]">
-                <span className="shrink-0 flex items-center gap-1.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                <span className="shrink-0 flex items-center gap-2">
+                  <span className="rounded bg-red-700 px-1.5 py-0.5 text-[12px] font-medium">
+                    {t('video.liveBadge', { defaultValue: 'Live' })}
                   </span>
                   <span className="font-medium tabular-nums">{fmt(duration)}</span>
                 </span>
                 <span className="truncate text-white/80 text-[12px]">
                   <ClinicalText as="span">{session.provider}</ClinicalText>
                 </span>
-              </span>
-              <span className="shrink-0 text-[11px] uppercase tracking-wider text-white/50">
-                {t('video.liveBadge', { defaultValue: 'Live' })}
               </span>
             </header>
             <div className="flex-1 min-h-0 relative bg-black">
@@ -269,8 +265,8 @@ export function VideoConsultPage() {
               style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
             >
               {mobileNotesOpen && (
-                <div className="mx-3 mb-2 rounded-2xl border border-white/15 bg-zinc-900/95 p-3 max-h-[32vh] flex flex-col shadow-xl">
-                  <label className="text-[11px] text-zinc-400 mb-1.5">{t('video.notes')}</label>
+                <div className="mx-3 mb-2 rounded-xl border border-white/15 bg-zinc-900/95 p-3 max-h-[32vh] flex flex-col shadow-xl">
+                  <label className="text-[12px] text-zinc-400 mb-1.5">{t('video.notes')}</label>
                   <textarea
                     value={notes}
                     onChange={e => setNotes(e.target.value)}
@@ -289,7 +285,7 @@ export function VideoConsultPage() {
                     setMobileNotesOpen(o => !o);
                     setMobileRoomOpen(false);
                   }}
-                  className={`af-tap flex flex-col items-center gap-1.5 min-w-[56px] ${mobileNotesOpen ? 'text-teal-300' : 'text-zinc-300'}`}
+                  className={`af-tap flex flex-col items-center gap-1.5 min-w-[56px] ${mobileNotesOpen ? 'text-white' : 'text-zinc-300'}`}
                 >
                   <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 border border-white/15">
                     {mobileNotesOpen ? (
@@ -298,7 +294,7 @@ export function VideoConsultPage() {
                       <StickyNote className="w-5 h-5" />
                     )}
                   </span>
-                  <span className="text-[11px]">{t('video.notes')}</span>
+                  <span className="text-[12px]">{t('video.notes')}</span>
                 </button>
                 <button
                   type="button"
@@ -308,7 +304,7 @@ export function VideoConsultPage() {
                   <span className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 text-white shadow-lg shadow-red-900/40 ring-4 ring-red-900/30">
                     <PhoneOff className="w-7 h-7" aria-hidden />
                   </span>
-                  <span className="text-[11px] text-red-200 font-medium">{t('video.endCall')}</span>
+                  <span className="text-[12px] text-red-200 font-medium">{t('video.endCall')}</span>
                 </button>
                 <button
                   type="button"
@@ -316,7 +312,7 @@ export function VideoConsultPage() {
                     setMobileRoomOpen(o => !o);
                     setMobileNotesOpen(false);
                   }}
-                  className={`af-tap flex flex-col items-center gap-1.5 min-w-[56px] ${mobileRoomOpen ? 'text-teal-300' : 'text-zinc-300'}`}
+                  className={`af-tap flex flex-col items-center gap-1.5 min-w-[56px] ${mobileRoomOpen ? 'text-white' : 'text-zinc-300'}`}
                 >
                   <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 border border-white/15">
                     {mobileRoomOpen ? (
@@ -325,37 +321,37 @@ export function VideoConsultPage() {
                       <Activity className="w-5 h-5" />
                     )}
                   </span>
-                  <span className="text-[11px]">
+                  <span className="text-[12px]">
                     {t('video.roomDetails', { defaultValue: 'Details' })}
                   </span>
                 </button>
               </div>
               {mobileRoomOpen && (
-                <div className="mx-3 mt-2 rounded-xl border border-white/10 bg-zinc-900/90 px-3 py-2 text-[11px] text-zinc-400 max-h-24 overflow-y-auto">
+                <div className="mx-3 mt-2 rounded-xl border border-white/10 bg-zinc-900/90 px-3 py-2 text-[12px] text-zinc-400 max-h-24 overflow-y-auto">
                   <p className="text-zinc-500 mb-1">
                     {t('video.roomUrlLabel', { defaultValue: 'Room' })}
                   </p>
-                  <ClinicalText className="block font-mono break-all text-zinc-200 text-[10px] leading-relaxed">
+                  <ClinicalText className="block font-mono break-all text-zinc-200 text-[12px] leading-relaxed">
                     {session.url}
                   </ClinicalText>
                 </div>
               )}
-              <p className="text-center text-[10px] text-zinc-500 px-4 pt-2">
+              <p className="text-center text-[12px] text-zinc-500 px-4 pt-2">
                 {t('video.disclaimer')}
               </p>
             </div>
           </div>
 
-          <section className="hidden lg:block af-elevate rounded-2xl border border-[#D9C8AE] bg-white overflow-hidden">
+          <section className="hidden lg:block rounded-xl border border-border bg-card overflow-hidden">
             {bandwidth === 'poor' && (
-              <div className="bg-amber-50 border-b border-amber-200 text-amber-700 px-4 py-2 text-xs">
+              <div className="bg-amber-50 border-b border-amber-200 text-amber-800 px-4 py-2 text-xs">
                 {t('video.audioOnlyBanner')}
               </div>
             )}
-            <div className="p-3 flex items-center justify-between text-xs text-[#5B5149] border-b border-[#E7D9BB]">
+            <div className="p-3 flex items-center justify-between text-xs text-muted-foreground border-b border-border">
               <span className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#2F6B4F]" />
-                Live · <ClinicalText>{session.provider}</ClinicalText> · {fmt(duration)}
+                <Activity className="w-4 h-4 text-primary" />
+                Live, <ClinicalText>{session.provider}</ClinicalText>, {fmt(duration)}
               </span>
               <button
                 onClick={end}
@@ -374,43 +370,41 @@ export function VideoConsultPage() {
               />
             </div>
             <div className="p-4 grid md:grid-cols-2 gap-3">
-              <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground flex flex-col gap-1">
                 {t('video.notes')}
                 <textarea
                   rows={4}
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm"
+                  className="af-focus rounded-lg border border-border px-3 py-2 text-sm"
                 />
               </label>
-              <div className="text-xs text-[#5B5149]">
+              <div className="text-xs text-muted-foreground">
                 <p>Room URL (demo):</p>
                 <ClinicalText className="block font-mono break-all">{session.url}</ClinicalText>
               </div>
             </div>
-            <p className="px-4 pb-4 text-[11px] text-[#5B5149]">{t('video.disclaimer')}</p>
+            <p className="px-4 pb-4 text-[12px] text-muted-foreground">{t('video.disclaimer')}</p>
           </section>
         </>
       )}
 
       {phase === 'post' && session && (
-        <section className="af-elevate rounded-2xl border border-[#D9C8AE] bg-white p-5 space-y-3">
-          <h2 className="text-sm uppercase tracking-widest text-[#5B5149]">
-            {t('video.postCall')}
-          </h2>
-          <p className="text-sm text-[#1F1B18]">Duration: {fmt(duration)}</p>
-          <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+        <section className="rounded-xl border border-border bg-card p-5 space-y-3">
+          <h2 className="text-[15px] font-semibold text-foreground">{t('video.postCall')}</h2>
+          <p className="text-sm text-foreground">Duration: {fmt(duration)}</p>
+          <label className="text-xs text-muted-foreground flex flex-col gap-1">
             {t('video.notes')}
             <textarea
               rows={5}
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm"
+              className="af-focus rounded-lg border border-border px-3 py-2 text-sm"
             />
           </label>
           <button
             onClick={saveNote}
-            className="af-press af-focus bg-[#214838] text-[#F7F1E6] px-4 py-2 rounded-xl text-sm"
+            className="af-press af-focus bg-primary text-sidebar-foreground px-4 py-2 rounded-xl text-sm"
           >
             {t('common.save')}
           </button>

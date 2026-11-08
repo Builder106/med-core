@@ -3,6 +3,7 @@ import {
   Activity,
   Barcode,
   Bell,
+  Bot,
   CalendarCheck2,
   FileText,
   HeartPulse,
@@ -13,7 +14,6 @@ import {
   Mic,
   Pill,
   Shield,
-  Sparkles,
   Stethoscope,
   Syringe,
   TestTube2,
@@ -25,31 +25,6 @@ import type { ComponentType } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router';
 import { useApp } from '../context/AppContext';
-
-function SidePattern() {
-  return (
-    <div className="absolute inset-0 pointer-events-none opacity-20">
-      <svg width="100%" height="100%">
-        <defs>
-          <pattern id="medcore-side-grid" width="56" height="56" patternUnits="userSpaceOnUse">
-            <path
-              d="M0 28 L28 0 L56 28 L28 56 Z"
-              fill="none"
-              stroke="rgba(195,154,61,0.24)"
-              strokeWidth="1.2"
-            />
-            <path
-              d="M0 12 H56 M0 44 H56 M12 0 V56 M44 0 V56"
-              stroke="rgba(247,241,230,0.06)"
-              strokeWidth="1"
-            />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#medcore-side-grid)" />
-      </svg>
-    </div>
-  );
-}
 
 export type NavItem = {
   to: string;
@@ -69,7 +44,7 @@ export const doctorItems: NavItem[] = [
   { to: '/video-consult', labelKey: 'sidebar.videoConsult', icon: Video },
   { to: '/voice-consult', labelKey: 'voice.record', icon: Mic },
   { to: '/sms-inbox', labelKey: 'sidebar.smsInbox', icon: MessageSquare },
-  { to: '/ai-assistant', labelKey: 'sidebar.aiClinicalAssistant', icon: Sparkles },
+  { to: '/ai-assistant', labelKey: 'sidebar.aiClinicalAssistant', icon: Bot },
 ];
 
 export const patientItems: NavItem[] = [
@@ -96,7 +71,7 @@ export const adminItems: NavItem[] = [
 ];
 
 export function Sidebar() {
-  const { role } = useApp();
+  const { role, signOut } = useApp();
   const { t } = useTranslation();
   const roleTitle =
     role === 'doctor'
@@ -107,28 +82,21 @@ export function Sidebar() {
   const navItems = role === 'doctor' ? doctorItems : role === 'patient' ? patientItems : adminItems;
 
   return (
-    <aside className="w-76 bg-[#214838] text-[#F7F1E6] hidden lg:flex flex-col relative min-h-screen self-stretch z-20 flex-shrink-0 border-r border-[#315D4A]">
-      <SidePattern />
-      <div className="relative z-10 px-6 pt-6 pb-4">
-        <div className="flex items-start gap-3">
-          <div className="bg-[#C39A3D] text-[#1F1B18] p-2.5 rounded-2xl shadow-lg shadow-[#1F1B18]/20">
-            <Hexagon className="w-6 h-6 fill-current" />
-          </div>
-          <div>
-            <h1 className="text-[28px] leading-none tracking-tight text-[#F7F1E6]">MedCore</h1>
-            <p className="text-[11px] mt-1 uppercase tracking-[0.2em] text-[#DAB776]">
-              {roleTitle}
-            </p>
-          </div>
+    <aside className="on-dark w-64 bg-sidebar text-sidebar-foreground hidden lg:flex flex-col min-h-screen self-stretch z-20 flex-shrink-0 border-r border-sidebar-border">
+      <div className="flex items-center gap-3 px-5 pt-5 pb-5">
+        <div className="bg-sidebar-primary text-sidebar p-2 rounded-lg">
+          <Hexagon className="w-5 h-5 fill-current" aria-hidden />
+        </div>
+        <div>
+          <p className="text-[18px] font-semibold leading-tight text-sidebar-foreground">MedCore</p>
+          <p className="text-[13px] text-sidebar-foreground/75">{roleTitle}</p>
         </div>
       </div>
-      <div className="relative z-10 px-6 pb-4">
-        <div className="rounded-2xl border border-[#3A6A54] bg-[#1B3D30]/75 px-3 py-2 text-[12px] text-[#EFDDBA]">
-          {t('sidebar.offlineTagline')}
-        </div>
-      </div>
-      <nav className="relative z-10 flex-1 px-4 pb-6 overflow-y-auto">
-        <div className="space-y-1">
+      <nav
+        aria-label={t('sidebar.navigation', { defaultValue: 'Main' })}
+        className="flex-1 px-3 pb-6 overflow-y-auto"
+      >
+        <div className="space-y-0.5">
           {navItems.map(item => (
             <NavLink
               key={item.to}
@@ -136,31 +104,26 @@ export function Sidebar() {
               end={item.to === '/'}
               className={({ isActive }) =>
                 clsx(
-                  'af-elevate af-press af-focus w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all text-[14px]',
+                  'af-focus w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-[14px]',
                   isActive
-                    ? 'bg-[#C39A3D]/18 text-[#F7F1E6] border border-[#C39A3D]/55 shadow-[0_10px_20px_-16px_rgba(195,154,61,0.9)]'
-                    : 'text-[#F7F1E6]/78 hover:bg-[#F7F1E6]/8 hover:text-[#F7F1E6]'
+                    ? 'bg-sidebar-accent text-white font-medium'
+                    : 'text-sidebar-foreground/80 hover:bg-sidebar-strong hover:text-sidebar-foreground'
                 )
               }
             >
-              {({ isActive }) => (
-                <>
-                  <item.icon
-                    className={clsx(
-                      'w-4.5 h-4.5',
-                      isActive ? 'text-[#DAB776]' : 'text-[#F7F1E6]/75'
-                    )}
-                  />
-                  <span>{t(item.labelKey)}</span>
-                </>
-              )}
+              <item.icon className="w-4 h-4 shrink-0" />
+              <span>{t(item.labelKey)}</span>
             </NavLink>
           ))}
         </div>
       </nav>
-      <div className="relative z-10 p-4 border-t border-[#315D4A]">
-        <button className="af-elevate af-press af-focus w-full flex items-center gap-3 px-4 py-3 text-[14px] text-[#F7F1E6]/80 hover:bg-[#F7F1E6]/8 hover:text-[#F7F1E6] rounded-2xl transition-colors">
-          <LogOut className="w-4.5 h-4.5" />
+      <div className="p-3 border-t border-sidebar-border">
+        <button
+          type="button"
+          onClick={() => void signOut()}
+          className="af-focus w-full flex items-center gap-3 px-3 py-2.5 text-[14px] text-sidebar-foreground/80 hover:bg-sidebar-strong hover:text-sidebar-foreground rounded-md transition-colors"
+        >
+          <LogOut className="w-4 h-4" aria-hidden />
           {t('sidebar.signOut')}
         </button>
       </div>

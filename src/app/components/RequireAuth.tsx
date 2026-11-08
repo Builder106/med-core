@@ -9,7 +9,7 @@ export function RequireAuth() {
 
   if (sessionLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F3ECE1] text-[#5B5149]">
+      <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
         <p className="text-sm">{t('auth.checkingSession')}</p>
       </div>
     );

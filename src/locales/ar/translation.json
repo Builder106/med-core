@@ -51,13 +51,12 @@
     "checkingSession": "جارٍ التحميل…",
     "errorInvalid": "معرّف أو PIN غير صحيح.",
     "errorLocked": "تم قفل الحساب مؤقتًا.",
-    "demoHint": "العرض: طبيب DOC-001 / 4242 · مريض PAT-001 / 1212 · مسؤول ADM-001 / 3434."
+    "demoHint": "العرض: طبيب DOC-001 / 4242؛ مريض PAT-001 / 1212؛ مسؤول ADM-001 / 3434."
   },
   "sidebar": {
     "doctorWorkspace": "مساحة الطبيب",
     "patientPortal": "بوابة المريض",
     "facilityAdmin": "إدارة المنشأة",
-    "offlineTagline": "منصة رعاية أولاً بدون اتصال ومتوافقة مع FHIR",
     "signOut": "تسجيل الخروج",
     "clinicalHub": "المركز السريري",
     "patientSearch": "البحث عن المريض",

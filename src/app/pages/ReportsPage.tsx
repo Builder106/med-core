@@ -1,64 +1,89 @@
-import { Download, FileText } from 'lucide-react';
+import { Download, Printer } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { dailyStats, facilities } from '../data/mock-data';
+import { downloadCsv } from '../lib/csv';
+
+function exportReport() {
+  downloadCsv('ministry-report', [
+    ['Section', 'Name', 'Value'],
+    ...dailyStats.topDiagnoses.map(d => ['Top diagnoses', d.name, d.count]),
+    ...facilities.map(f => [
+      'Bed occupancy',
+      f.name,
+      `${Math.round((f.bedsOccupied / f.beds) * 100)}%`,
+    ]),
+  ]);
+}
 
 export function ReportsPage() {
   return (
-    <div className="max-w-5xl space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[22px]">Reports</h1>
+    <div className="max-w-5xl space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[14px] text-muted-foreground">
+          Daily figures for the Ministry of Health submission.
+        </p>
         <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-[14px]">
-            <Download className="w-4 h-4" /> Export CSV
+          <button
+            type="button"
+            onClick={exportReport}
+            className="af-press af-focus flex items-center gap-2 px-3 py-2 bg-card border border-border text-foreground rounded-md hover:bg-muted text-[14px]"
+          >
+            <Download className="w-4 h-4" aria-hidden /> Export CSV
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-[14px]">
-            <FileText className="w-4 h-4" /> Generate PDF
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="af-press af-focus flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary-strong text-[14px]"
+          >
+            <Printer className="w-4 h-4" aria-hidden /> Print or save as PDF
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-[16px] mb-4">Top Diagnoses — Ministry Report</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <section className="bg-card rounded-lg border border-border p-5">
+          <h2 className="text-[15px] font-semibold text-foreground mb-4">Top diagnoses</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={dailyStats.topDiagnoses} layout="vertical">
-              <XAxis type="number" tick={{ fontSize: 12 }} />
-              <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={100} />
+              <XAxis type="number" tick={{ fontSize: 12 }} allowDecimals={false} />
+              <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={110} />
               <Tooltip trigger="click" wrapperStyle={{ pointerEvents: 'auto' }} />
-              <Bar dataKey="count" fill="#f59e0b" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="count" fill="#214838" radius={[0, 3, 3, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </section>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <h2 className="text-[16px] mb-4">Facility Summary</h2>
-          <div className="space-y-3">
+        <section className="bg-card rounded-lg border border-border p-5">
+          <h2 className="text-[15px] font-semibold text-foreground mb-4">
+            Bed occupancy by facility
+          </h2>
+          <ul className="divide-y divide-border">
             {facilities.map(f => {
               const occ = Math.round((f.bedsOccupied / f.beds) * 100);
               return (
-                <div key={f.id} className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-[13px]">{f.name}</p>
+                <li key={f.id} className="py-3">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="text-[14px] text-foreground">{f.name}</p>
                     <span
-                      className={`text-[11px] px-2 py-0.5 rounded-full ${occ > 90 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}
+                      className={`text-[13px] tabular-nums ${occ > 90 ? 'font-semibold text-destructive' : 'text-foreground'}`}
                     >
                       {occ}% occupied
                     </span>
                   </div>
-                  <p className="text-[11px] text-gray-500">
-                    {f.location} • {f.level}
+                  <p className="text-[13px] text-muted-foreground">
+                    {f.location}, {f.level}
                   </p>
-                  <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="mt-2 h-1.5 bg-border rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full ${occ > 90 ? 'bg-red-500' : occ > 75 ? 'bg-amber-500' : 'bg-green-500'}`}
+                      className={`h-full rounded-full ${occ > 90 ? 'bg-destructive' : 'bg-primary'}`}
                       style={{ width: `${occ}%` }}
                     />
                   </div>
-                </div>
+                </li>
               );
             })}
-          </div>
-        </div>
+          </ul>
+        </section>
       </div>
     </div>
   );
