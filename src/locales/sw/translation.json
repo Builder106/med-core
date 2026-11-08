@@ -51,13 +51,12 @@
     "checkingSession": "Inapakia…",
     "errorInvalid": "Kitambulisho au PIN si sahihi.",
     "errorLocked": "Akaunti imefungwa kwa muda.",
-    "demoHint": "Demo: Daktari DOC-001 / 4242 · Mgonjwa PAT-001 / 1212 · Msimamizi ADM-001 / 3434."
+    "demoHint": "Demo: Daktari DOC-001 / 4242; Mgonjwa PAT-001 / 1212; Msimamizi ADM-001 / 3434."
   },
   "sidebar": {
     "doctorWorkspace": "Eneo la Daktari",
     "patientPortal": "Mlango wa Mgonjwa",
     "facilityAdmin": "Msimamizi wa Kituo",
-    "offlineTagline": "Mfumo wa huduma bila mtandao, uliopangwa na FHIR",
     "signOut": "Ondoka",
     "clinicalHub": "Kitovu cha Kliniki",
     "patientSearch": "Tafuta Mgonjwa",

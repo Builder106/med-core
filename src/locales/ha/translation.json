@@ -51,13 +51,12 @@
     "checkingSession": "Ana lodawa…",
     "errorInvalid": "ID ko PIN mara daidai.",
     "errorLocked": "An kulle asusu na wucin-gadi.",
-    "demoHint": "Demo: Likita DOC-001 / 4242 · Maraƙi PAT-001 / 1212 · Jagora ADM-001 / 3434."
+    "demoHint": "Demo: Likita DOC-001 / 4242; Maraƙi PAT-001 / 1212; Jagora ADM-001 / 3434."
   },
   "sidebar": {
     "doctorWorkspace": "Wurin Likita",
     "patientPortal": "Portal na Marasa Lafiya",
     "facilityAdmin": "Mai Kula da Wuri",
-    "offlineTagline": "Tsarin kiwon lafiya ba-a-kan-layi-da-farko, kamar FHIR",
     "signOut": "Fita",
     "clinicalHub": "Cibiyar Asibiti",
     "patientSearch": "Nemo Mara Lafiya",
