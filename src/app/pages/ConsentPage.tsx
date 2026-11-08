@@ -22,7 +22,7 @@ export function ConsentPage() {
       key: 'when',
       header: 'When',
       cell: a => (
-        <span className="text-[12px] text-gray-500 whitespace-nowrap">
+        <span className="text-[12px] text-muted-foreground whitespace-nowrap">
           {new Date(a.timestamp).toLocaleString()}
         </span>
       ),
@@ -34,7 +34,7 @@ export function ConsentPage() {
         <span>
           {a.accessedBy}
           <br />
-          <span className="text-[11px] text-gray-400">{a.role}</span>
+          <span className="text-[12px] text-muted-foreground">{a.role}</span>
         </span>
       ),
     },
@@ -42,9 +42,7 @@ export function ConsentPage() {
     {
       key: 'section',
       header: 'Section',
-      cell: a => (
-        <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[12px]">{a.section}</span>
-      ),
+      cell: a => <span className="bg-muted px-2 py-0.5 rounded text-[12px]">{a.section}</span>,
     },
     { key: 'facility', header: 'Facility', cell: a => a.facility, hideOnMobile: true },
   ];
@@ -52,37 +50,37 @@ export function ConsentPage() {
   return (
     <div className="max-w-4xl space-y-6">
       <div>
-        <h1 className="text-[22px] text-slate-900">Consent & Privacy</h1>
-        <p className="text-[13px] text-slate-400 mt-1">
+        <h1 className="text-[22px] font-semibold text-foreground">Consent and privacy</h1>
+        <p className="text-[13px] text-muted-foreground mt-1">
           Control who can access your health records. Grant or revoke access per provider at any
           time.
         </p>
       </div>
 
       <div className="space-y-3">
-        <h2 className="text-[16px]">Provider Access</h2>
+        <h2 className="text-[16px]">Provider access</h2>
         {consents.map(c => (
           <div
             key={c.id}
-            className="bg-white rounded-xl border border-gray-200 p-4 flex items-start sm:items-center gap-4 flex-wrap sm:flex-nowrap"
+            className="bg-card rounded-xl border border-border p-4 flex items-start sm:items-center gap-4 flex-wrap sm:flex-nowrap"
           >
             <div
               className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${c.granted ? 'bg-green-100' : 'bg-red-100'}`}
             >
               {c.granted ? (
-                <ShieldCheck className="w-5 h-5 text-green-600" />
+                <ShieldCheck className="w-5 h-5 text-green-700" />
               ) : (
-                <ShieldOff className="w-5 h-5 text-red-600" />
+                <ShieldOff className="w-5 h-5 text-red-700" />
               )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[14px]">{c.providerName}</p>
-              <p className="text-[12px] text-gray-500">{c.facilityName}</p>
+              <p className="text-[12px] text-muted-foreground">{c.facilityName}</p>
               <div className="flex flex-wrap gap-1 mt-1">
                 {c.sections.map(s => (
                   <span
                     key={s}
-                    className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
+                    className="text-[12px] bg-muted text-muted-foreground px-2 py-0.5 rounded"
                   >
                     {s}
                   </span>
@@ -91,7 +89,7 @@ export function ConsentPage() {
             </div>
             <button
               onClick={() => toggleConsent(c.id)}
-              className={`af-tap af-press af-focus px-4 py-2 rounded-lg text-[13px] transition-colors w-full sm:w-auto ${c.granted ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-50 text-green-600 hover:bg-green-100'}`}
+              className={`af-tap af-press af-focus px-4 py-2 rounded-lg text-[13px] transition-colors w-full sm:w-auto ${c.granted ? 'bg-red-50 text-red-700 hover:bg-red-100' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
             >
               {c.granted ? 'Revoke' : 'Grant'}
             </button>
@@ -106,7 +104,7 @@ export function ConsentPage() {
           rows={audits}
           rowKey={a => a.id}
           emptyLabel="No access yet"
-          mobileTitle={a => `${a.action} · ${a.section}`}
+          mobileTitle={a => `${a.action}, ${a.section}`}
           mobileSubtitle={a => `${a.accessedBy} — ${new Date(a.timestamp).toLocaleString()}`}
         />
       </div>

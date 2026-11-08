@@ -1,5 +1,19 @@
 # JOURNAL — MedCore
 
+## 2026-11-07: Strip the generated UI layer back to working parts #decision #frontend
+
+A review found the frontend was a Figma Make scaffold under a cream-and-serif theme, and several parts of it misled the user. The doctor dashboard's "AI Flags" tile always showed 3 because it counted a fixed array of sentences. The doctor's name and hospital were hard-coded. The AI assistant replayed canned text about one patient, whatever patient was selected. The admin "interoperability" card printed made-up healthy statuses, the "ministry readiness" figure was 98 or 86, and nine buttons, Sign Out in the sidebar among them, had no handler.
+
+What changed:
+
+- Removed `App.tsx`, `AIPanel`, `Header`, `PatientDirectory`, `ClinicalTimeline` and 43 unused shadcn files. None were mounted. That left 48 dependencies with no importer (MUI, Emotion, Radix and others), and they are gone. `react-is` is now a direct dependency, because recharts needs it and MUI used to hoist it.
+- Colors now come from tokens in `theme.css`. The background is the PRD's `#F8F9FB`. The forest green stays as the brand color. The PRD asks for teal `#1D9E75`, but white text on it is 3.4:1, so the darker green stays. Muted text is `#42484e`, because the axe suite in CI enforces 7:1.
+- Dropped the PRD's "teal for patient actions, purple for clinical tools, amber for AI" scheme. In practice it gave the app a legend nobody needed and random violet accents.
+- Dashboards show real counts only. Follow-ups with a count of zero are hidden, and referrals are filtered by `pending` status on both the API path and the mock path.
+- The AI assistant calls `/ai/chat`. It falls back to stored sample answers only when the server is unreachable, and it says so. Replies are HTML-escaped before the markdown replacements.
+- The CSV exports on Reports, Audit log and Inventory work through `lib/csv.ts`. Book appointment, Register patient, New referral, Add staff and Scan QR were removed rather than left as dead buttons. Each needs a real form before it comes back.
+- `ui-guardrails.test.ts` replaces the theme test that pinned the old classes. It fails on eyebrow tracking, pulsing dots, left rails, middle dots, gradients, hard-coded hex classes and buttons without a handler.
+
 ## 2026-11-06: Add OpenGraph and Twitter card metadata #decision
 
 `index.html` had only a title, so links to the public demo unfurled bare. It now has a description, a canonical URL, OpenGraph and Twitter tags, and a 1200x630 card at `public/og.png`. The card pairs the wordmark with the pulse-line mark from the favicon, in the same green and gold. The change is on `staging` and still needs promoting to `main`.

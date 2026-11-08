@@ -1,4 +1,4 @@
-import { Bell, BellRing, CalendarDays, CheckCircle, Loader2, Send, XCircle } from 'lucide-react';
+import { BellRing, CalendarDays, CheckCircle, Loader2, Send, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClinicalText } from '../components/clinical/ClinicalText';
@@ -161,15 +161,14 @@ export function RemindersPage() {
   return (
     <div className="max-w-5xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[22px] text-[#1F1B18] flex items-center gap-2">
-          <Bell className="w-5 h-5 text-[#214838]" />
+        <h1 className="text-[22px] font-semibold text-foreground flex items-center gap-2">
           {t('reminders.title')}
         </h1>
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={enablePush}
             disabled={pushStatus === 'enabling' || pushStatus === 'enabled'}
-            className="af-tap af-press af-focus inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-[#F3ECE1] border border-[#D9C8AE] text-[#214838]"
+            className="af-tap af-press af-focus inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-background border border-border text-primary"
           >
             <BellRing className="w-4 h-4" />
             {pushStatus === 'enabled'
@@ -182,7 +181,7 @@ export function RemindersPage() {
           </button>
           <button
             onClick={onTestReminder}
-            className="af-tap af-press af-focus inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-[#214838] text-[#F7F1E6]"
+            className="af-tap af-press af-focus inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm bg-primary text-sidebar-foreground"
           >
             <Send className="w-4 h-4" />
             {t('reminders.sendTest')}
@@ -198,26 +197,26 @@ export function RemindersPage() {
 
       {adherence && (
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-4">
-            <p className="text-[11px] uppercase tracking-widest text-[#5B5149]">
+          <div className="bg-card rounded-xl border border-border p-4">
+            <p className="text-[12px] text-muted-foreground">
               {t('reminders.adherence', { days: 30 })}
             </p>
-            <p className="text-3xl mt-1 text-[#214838] notranslate" translate="no">
+            <p className="text-3xl mt-1 text-primary notranslate" translate="no">
               {adherence.ratePct}%
             </p>
-            <p className="text-xs text-[#5B5149]">{adherence.total} doses</p>
+            <p className="text-xs text-muted-foreground">{adherence.total} doses</p>
           </div>
-          <div className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-4">
-            <p className="text-[11px] uppercase tracking-widest text-[#5B5149]">Streak</p>
-            <p className="text-3xl mt-1 text-[#DAB776] notranslate" translate="no">
+          <div className="bg-card rounded-xl border border-border p-4">
+            <p className="text-[12px] text-muted-foreground">Streak</p>
+            <p className="text-3xl mt-1 text-foreground notranslate" translate="no">
               {adherence.streakDays}
             </p>
-            <p className="text-xs text-[#5B5149]">
+            <p className="text-xs text-muted-foreground">
               {t('reminders.streak', { count: adherence.streakDays })}
             </p>
           </div>
-          <div className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-4">
-            <p className="text-[11px] uppercase tracking-widest text-[#5B5149]">Recent doses</p>
+          <div className="bg-card rounded-xl border border-border p-4">
+            <p className="text-[12px] text-muted-foreground">Recent doses</p>
             <div className="flex gap-1 mt-2 flex-wrap">
               {adherence.events.slice(0, 24).map((e, i) => (
                 <button
@@ -231,13 +230,25 @@ export function RemindersPage() {
                     )
                   }
                   aria-label={`${e.doseDate} ${e.status}`}
-                  className={`af-focus w-4 h-4 rounded-sm transition-transform ${selectedEvent?.idx === i ? 'ring-2 ring-offset-1 ring-[#C39A3D]' : ''} ${e.status === 'taken' ? 'bg-emerald-500' : e.status === 'skipped' ? 'bg-amber-400' : 'bg-[#D9C8AE]'}`}
+                  className={`af-focus w-4 h-4 rounded-sm transition-transform ${selectedEvent?.idx === i ? 'ring-2 ring-offset-1 ring-ring' : ''} ${e.status === 'taken' ? 'bg-primary' : e.status === 'skipped' ? 'bg-amber-500' : 'bg-card border border-input'}`}
                 />
               ))}
             </div>
+            <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1">
+                <span aria-hidden className="w-3 h-3 rounded-sm bg-primary" /> Taken
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span aria-hidden className="w-3 h-3 rounded-sm bg-amber-500" /> Skipped
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span aria-hidden className="w-3 h-3 rounded-sm bg-card border border-input" />{' '}
+                Missed
+              </span>
+            </p>
             {selectedEvent && (
-              <p className="mt-2 text-[12px] text-[#5B5149]">
-                <span className="font-medium text-[#1F1B18]">{selectedEvent.doseDate}</span> ·{' '}
+              <p className="mt-2 text-[12px] text-muted-foreground">
+                <span className="font-medium text-foreground">{selectedEvent.doseDate}</span>,{' '}
                 {selectedEvent.status}
               </p>
             )}
@@ -246,15 +257,15 @@ export function RemindersPage() {
       )}
 
       {actionable.length > 0 && (
-        <section className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-5">
-          <h2 className="text-sm uppercase tracking-widest text-[#5B5149] mb-3">Needs response</h2>
+        <section className="bg-card rounded-xl border border-border p-5">
+          <h2 className="text-[15px] font-semibold text-foreground mb-3">Needs response</h2>
           <ul className="space-y-2">
             {actionable.map(r => {
               const rx = getRx(r.prescriptionId);
               return (
                 <li
                   key={r.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#D9C8AE] p-3"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border p-3"
                 >
                   <div>
                     <p className="text-sm">
@@ -266,15 +277,15 @@ export function RemindersPage() {
                         <span className="notranslate">{r.prescriptionId}</span>
                       )}
                     </p>
-                    <p className="text-xs text-[#5B5149]">
-                      Scheduled {new Date(r.scheduledTime).toLocaleString()} · {r.channel}
+                    <p className="text-xs text-muted-foreground">
+                      Scheduled {new Date(r.scheduledTime).toLocaleString()}, {r.channel}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => onRespond(r.id, 'TAKEN')}
                       disabled={busyReminder === r.id}
-                      className="af-tap af-press af-focus inline-flex items-center gap-1 px-4 py-2.5 rounded-lg text-sm bg-emerald-600 text-white"
+                      className="af-tap af-press af-focus inline-flex items-center gap-1 px-4 py-2.5 rounded-md text-sm bg-primary text-primary-foreground hover:bg-primary-strong"
                     >
                       {busyReminder === r.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -286,7 +297,7 @@ export function RemindersPage() {
                     <button
                       onClick={() => onRespond(r.id, 'SKIP')}
                       disabled={busyReminder === r.id}
-                      className="af-tap af-press af-focus inline-flex items-center gap-1 px-4 py-2.5 rounded-lg text-sm bg-[#F3ECE1] border border-[#D9C8AE] text-[#214838]"
+                      className="af-tap af-press af-focus inline-flex items-center gap-1 px-4 py-2.5 rounded-lg text-sm bg-background border border-border text-primary"
                     >
                       <XCircle className="w-4 h-4" /> {t('reminders.markSkipped')}
                     </button>
@@ -299,12 +310,12 @@ export function RemindersPage() {
       )}
 
       {upcoming.length > 0 && (
-        <section className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-5">
-          <h2 className="text-sm uppercase tracking-widest text-[#5B5149] mb-3 flex items-center gap-2">
+        <section className="bg-card rounded-xl border border-border p-5">
+          <h2 className="text-[15px] font-semibold text-foreground mb-3 flex items-center gap-2">
             <CalendarDays className="w-4 h-4" />
             {t('reminders.nextReminder')}
           </h2>
-          <ul className="divide-y divide-[#F3ECE1]">
+          <ul className="divide-y divide-border">
             {upcoming.map(r => {
               const rx = getRx(r.prescriptionId);
               return (
@@ -318,8 +329,8 @@ export function RemindersPage() {
                       <span className="notranslate">{r.prescriptionId}</span>
                     )}
                   </span>
-                  <span className="text-xs text-[#5B5149] notranslate" translate="no">
-                    {new Date(r.scheduledTime).toLocaleString()} · {r.channel}
+                  <span className="text-xs text-muted-foreground notranslate" translate="no">
+                    {new Date(r.scheduledTime).toLocaleString()}, {r.channel}
                   </span>
                 </li>
               );
@@ -329,17 +340,15 @@ export function RemindersPage() {
       )}
 
       {role === 'doctor' && prescriptions.length > 0 && (
-        <section className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-5 space-y-3">
-          <h2 className="text-sm uppercase tracking-widest text-[#5B5149]">
-            {t('reminders.schedule')}
-          </h2>
+        <section className="bg-card rounded-xl border border-border p-5 space-y-3">
+          <h2 className="text-[15px] font-semibold text-foreground">{t('reminders.schedule')}</h2>
           <div className="grid sm:grid-cols-2 gap-3">
-            <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground flex flex-col gap-1">
               Prescription
               <select
                 value={scheduleRxId}
                 onChange={e => setScheduleRxId(e.target.value)}
-                className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm"
+                className="af-focus rounded-lg border border-border px-3 py-2 text-sm"
               >
                 {prescriptions.map(p => (
                   <option key={p.id} value={p.id}>
@@ -348,16 +357,16 @@ export function RemindersPage() {
                 ))}
               </select>
             </label>
-            <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground flex flex-col gap-1">
               Times (HH:MM, comma-separated)
               <input
                 value={scheduleTimes}
                 onChange={e => setScheduleTimes(e.target.value)}
-                className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm notranslate"
+                className="af-focus rounded-lg border border-border px-3 py-2 text-sm notranslate"
                 translate="no"
               />
             </label>
-            <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground flex flex-col gap-1">
               Days
               <input
                 type="number"
@@ -365,15 +374,15 @@ export function RemindersPage() {
                 max={90}
                 value={scheduleDays}
                 onChange={e => setScheduleDays(parseInt(e.target.value) || 1)}
-                className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm"
+                className="af-focus rounded-lg border border-border px-3 py-2 text-sm"
               />
             </label>
-            <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground flex flex-col gap-1">
               Channel
               <select
                 value={scheduleChannel}
                 onChange={e => setScheduleChannel(e.target.value as 'sms' | 'push')}
-                className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm"
+                className="af-focus rounded-lg border border-border px-3 py-2 text-sm"
               >
                 <option value="sms">SMS</option>
                 <option value="push">Push</option>
@@ -383,17 +392,17 @@ export function RemindersPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={createSchedule}
-              className="af-press af-focus px-4 py-2 rounded-lg text-sm bg-[#214838] text-[#F7F1E6]"
+              className="af-press af-focus px-4 py-2 rounded-lg text-sm bg-primary text-sidebar-foreground"
             >
               {t('common.save')}
             </button>
-            {scheduleMsg && <span className="text-xs text-[#5B5149]">{scheduleMsg}</span>}
+            {scheduleMsg && <span className="text-xs text-muted-foreground">{scheduleMsg}</span>}
           </div>
         </section>
       )}
 
       {loading && (
-        <p className="text-sm text-[#5B5149] flex items-center gap-2">
+        <p className="text-sm text-muted-foreground flex items-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin" />
           {t('common.loading')}
         </p>

@@ -37,10 +37,10 @@ export function ResponsiveTable<T>({
     <div className={clsx('w-full', className)}>
       <div
         data-responsive-table-desktop=""
-        className="hidden md:block overflow-x-auto rounded-2xl border border-[#E5D6BB] bg-white shadow-sm"
+        className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card shadow-sm"
       >
-        <table className="w-full text-[13px] text-[#1F1B18]">
-          <thead className="bg-[#F7F1E6] text-left text-[11px] uppercase tracking-[0.08em] text-[#5B5149]">
+        <table className="w-full text-[13px] text-foreground">
+          <thead className="bg-muted text-left text-[12px] text-muted-foreground">
             <tr>
               {columns.map(col => (
                 <th
@@ -53,10 +53,13 @@ export function ResponsiveTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#EFE4D1]">
+          <tbody className="divide-y divide-border">
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-8 text-center text-[#5B5149]">
+                <td
+                  colSpan={columns.length}
+                  className="px-4 py-8 text-center text-muted-foreground"
+                >
                   {emptyLabel}
                 </td>
               </tr>
@@ -66,7 +69,7 @@ export function ResponsiveTable<T>({
                   key={rowKey(row)}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                   className={clsx(
-                    'transition-colors hover:bg-[#F9F5ED]',
+                    'transition-colors hover:bg-card',
                     onRowClick && 'cursor-pointer'
                   )}
                 >
@@ -84,7 +87,7 @@ export function ResponsiveTable<T>({
 
       <div data-testid="responsive-table-mobile" className="md:hidden space-y-3">
         {rows.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[#D9C8AE] bg-[#F9F5ED] px-4 py-8 text-center text-sm text-[#5B5149]">
+          <div className="rounded-xl border border-dashed border-border bg-card px-4 py-8 text-center text-sm text-muted-foreground">
             {emptyLabel}
           </div>
         ) : (
@@ -94,28 +97,28 @@ export function ResponsiveTable<T>({
               data-testid="responsive-table-card"
               onClick={onRowClick ? () => onRowClick(row) : undefined}
               className={clsx(
-                'rounded-2xl border border-[#E5D6BB] bg-white p-4 shadow-sm',
+                'rounded-xl border border-border bg-card p-4 shadow-sm',
                 onRowClick && 'af-tap af-press cursor-pointer'
               )}
             >
               {mobileTitle && (
-                <div className="text-[15px] font-medium text-[#1F1B18]">{mobileTitle(row)}</div>
+                <div className="text-[15px] font-medium text-foreground">{mobileTitle(row)}</div>
               )}
               {mobileSubtitle && (
-                <div className="text-[12px] text-[#5B5149] mt-0.5">{mobileSubtitle(row)}</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">
+                  {mobileSubtitle(row)}
+                </div>
               )}
               <dl
                 className={clsx(
                   'grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-[13px]',
-                  (mobileTitle || mobileSubtitle) && 'mt-3 pt-3 border-t border-[#EFE4D1]'
+                  (mobileTitle || mobileSubtitle) && 'mt-3 pt-3 border-t border-border'
                 )}
               >
                 {visibleMobileColumns.map(col => (
                   <div key={col.key} className="contents">
-                    <dt className="text-[11px] uppercase tracking-[0.08em] text-[#5B5149] self-center">
-                      {col.header}
-                    </dt>
-                    <dd className="text-[#1F1B18] break-words">{col.cell(row)}</dd>
+                    <dt className="text-[12px] text-muted-foreground self-center">{col.header}</dt>
+                    <dd className="text-foreground break-words">{col.cell(row)}</dd>
                   </div>
                 ))}
               </dl>

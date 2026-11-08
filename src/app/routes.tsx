@@ -55,7 +55,9 @@ export const router = createBrowserRouter([
           { path: 'voice-consult', Component: VoiceConsultPage },
           {
             path: '*',
-            Component: () => <div className="text-center py-12 text-gray-500">Page not found</div>,
+            Component: () => (
+              <div className="text-center py-12 text-muted-foreground">Page not found</div>
+            ),
           },
         ],
       },

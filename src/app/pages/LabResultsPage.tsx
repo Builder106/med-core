@@ -104,11 +104,11 @@ export function LabResultsPage() {
 
   const statusPill = (status: LabRow['status']) => (
     <span
-      className={`text-[11px] px-2 py-0.5 rounded-full ${
+      className={`text-[12px] px-2 py-0.5 rounded ${
         status === 'critical'
           ? 'bg-red-100 text-red-700'
           : status === 'abnormal'
-            ? 'bg-amber-100 text-amber-700'
+            ? 'bg-amber-100 text-amber-800'
             : 'bg-green-100 text-green-700'
       }`}
     >
@@ -119,7 +119,7 @@ export function LabResultsPage() {
   const patientCell = (lab: LabRow) => {
     const patient = patients.find(p => p.id === lab.patientId);
     return (
-      <span className="text-purple-600">
+      <span className="text-primary">
         {patient ? `${patient.firstName} ${patient.lastName}` : lab.patientId}
       </span>
     );
@@ -132,7 +132,7 @@ export function LabResultsPage() {
       : []),
     { key: 'test', header: 'Test', cell: l => l.testName },
     { key: 'result', header: 'Result', cell: l => l.result },
-    { key: 'range', header: 'Reference Range', cell: l => l.referenceRange, hideOnMobile: true },
+    { key: 'range', header: 'Reference range', cell: l => l.referenceRange, hideOnMobile: true },
     { key: 'status', header: 'Status', cell: l => statusPill(l.status) },
     { key: 'lab', header: 'Lab', cell: l => l.labName, hideOnMobile: true },
   ];
@@ -140,7 +140,7 @@ export function LabResultsPage() {
   return (
     <div className="max-w-5xl space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h1 className="text-[22px]">Lab Results</h1>
+        <h1 className="text-[22px] font-semibold text-foreground">Lab results</h1>
         {role !== 'patient' && (
           <>
             <input
@@ -153,7 +153,7 @@ export function LabResultsPage() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={importing}
-              className="af-tap af-press af-focus inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-60 transition-colors text-[14px]"
+              className="af-tap af-press af-focus inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary-strong disabled:opacity-60 transition-colors text-[14px]"
             >
               <Upload className="w-4 h-4" /> {importing ? 'Importing…' : 'Import CSV'}
             </button>
@@ -171,7 +171,7 @@ export function LabResultsPage() {
               <AlertCircle className="w-4 h-4" />
             )}
             Imported {importResult.imported} of {importResult.total} lab results
-            {importResult.errors.length > 0 && ` · ${importResult.errors.length} skipped`}
+            {importResult.errors.length > 0 && `, ${importResult.errors.length} skipped`}
           </div>
           {importResult.errors.length > 0 && (
             <ul className="mt-1 ml-6 list-disc space-y-0.5">
@@ -188,8 +188,11 @@ export function LabResultsPage() {
         </div>
       )}
       {!apiOk && (
-        <div className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          API unreachable — showing legacy demo data.
+        <div
+          role="status"
+          className="text-[13px] text-amber-950 bg-amber-50 border border-amber-300 rounded-md px-3 py-2"
+        >
+          The server is unreachable, so this page shows sample data.
         </div>
       )}
       <ResponsiveTable
@@ -198,7 +201,7 @@ export function LabResultsPage() {
         rowKey={l => l.id}
         emptyLabel={loading ? 'Loading lab results…' : 'No lab results'}
         mobileTitle={l => l.testName}
-        mobileSubtitle={l => `${l.date} · ${l.result}`}
+        mobileSubtitle={l => `${l.date}, ${l.result}`}
       />
     </div>
   );

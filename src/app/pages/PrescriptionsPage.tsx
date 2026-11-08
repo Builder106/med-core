@@ -58,11 +58,11 @@ export function PrescriptionsPage() {
   return (
     <div className="max-w-5xl space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-[22px] text-[#1F1B18]">{t('nav.prescriptions')}</h1>
+        <h1 className="text-[22px] font-semibold text-foreground">{t('nav.prescriptions')}</h1>
         {role === 'doctor' && (
           <button
             onClick={() => setModalOpen(true)}
-            className="af-press af-focus flex items-center gap-2 px-4 py-2 bg-[#214838] text-[#F7F1E6] rounded-lg hover:bg-[#1B3D30] transition-colors text-[14px]"
+            className="af-press af-focus flex items-center gap-2 px-4 py-2 bg-primary text-sidebar-foreground rounded-lg hover:bg-primary-strong transition-colors text-[14px]"
           >
             <Plus className="w-4 h-4" /> {t('prescriptions.addNew')}
           </button>
@@ -71,15 +71,15 @@ export function PrescriptionsPage() {
 
       {error && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-800 px-4 py-2 text-sm">
-          API unreachable — showing legacy demo data. Start the API with{' '}
+          The server is unreachable, so this page shows sample data. Start the API with{' '}
           <code className="bg-amber-100 px-1 rounded">npm run dev</code>.
         </div>
       )}
 
       {events.length > 0 && (
-        <section className="af-elevate bg-white rounded-2xl border border-[#D9C8AE] p-5">
-          <h2 className="text-sm uppercase tracking-widest text-[#5B5149] mb-3 flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-red-600" />
+        <section className="bg-card rounded-xl border border-border p-5">
+          <h2 className="text-[15px] font-semibold text-foreground mb-3 flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-red-700" />
             {t('interactions.flagged')}
           </h2>
           <ul className="space-y-2">
@@ -93,19 +93,19 @@ export function PrescriptionsPage() {
                   <Icon className="w-4 h-4 mt-0.5 shrink-0" />
                   <div className="flex-1">
                     <p>
-                      <span className="font-semibold uppercase text-[11px] mr-1">
+                      <span className="font-semibold text-[12px] mr-1">
                         {t(`interactions.${e.level}`)}
                       </span>
                       <ClinicalText>
                         {e.drugA} + {e.drugB}
                       </ClinicalText>
                       {e.overridden ? (
-                        <span className="ml-2 text-[11px] text-red-700">[overridden]</span>
+                        <span className="ml-2 text-[12px] text-red-700">[overridden]</span>
                       ) : null}
                     </p>
                     <p className="text-xs">{e.message}</p>
-                    <p className="text-[11px] text-[#5B5149] mt-1">
-                      {new Date(e.createdAt).toLocaleString()} · source: {e.source}
+                    <p className="text-[12px] text-muted-foreground mt-1">
+                      {new Date(e.createdAt).toLocaleString()}, source: {e.source}
                     </p>
                   </div>
                 </li>
@@ -118,37 +118,32 @@ export function PrescriptionsPage() {
       <div className="space-y-4">
         {apiRx && liveRx.length > 0 && (
           <section>
-            <h2 className="text-sm uppercase tracking-widest text-[#5B5149] mb-3">
-              Active prescriptions
-            </h2>
+            <h2 className="text-[15px] font-semibold text-foreground mb-3">Active prescriptions</h2>
             <div className="space-y-3">
               {liveRx.map(rx => (
-                <div
-                  key={rx.id}
-                  className="af-elevate bg-white rounded-xl border border-[#D9C8AE] p-5"
-                >
+                <div key={rx.id} className="bg-card rounded-xl border border-border p-5">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <span
-                        className={`text-[11px] px-2 py-0.5 rounded-full ${rx.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-[#F3ECE1] text-[#5B5149]'}`}
+                        className={`text-[12px] px-2 py-0.5 rounded ${rx.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-background text-muted-foreground'}`}
                       >
                         {rx.status}
                       </span>
-                      <span className="text-[12px] text-[#5B5149]">
+                      <span className="text-[12px] text-muted-foreground">
                         {new Date(rx.createdAt).toLocaleDateString()}
                       </span>
                     </div>
-                    <span className="text-[11px] text-[#9B8E7F] notranslate">{rx.id}</span>
+                    <span className="text-[12px] text-muted-foreground notranslate">{rx.id}</span>
                   </div>
-                  <div className="flex items-start gap-3 p-3 bg-[#FDFAF2] rounded-lg">
-                    <Pill className="w-4 h-4 text-[#214838] mt-0.5 shrink-0" />
+                  <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+                    <Pill className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                     <div>
                       <ClinicalText className="text-[14px]" as="strong">
                         {rx.drugName} {rx.dosage}
                       </ClinicalText>
-                      <p className="text-[12px] text-[#5B5149] notranslate" translate="no">
+                      <p className="text-[12px] text-muted-foreground notranslate" translate="no">
                         {rx.frequency}
-                        {rx.duration ? ` · ${rx.duration}` : ''}
+                        {rx.duration ? `, ${rx.duration}` : ''}
                       </p>
                     </div>
                   </div>
@@ -162,11 +157,11 @@ export function PrescriptionsPage() {
           legacyRx.map(rx => {
             const patient = patients.find(p => p.id === rx.patientId);
             return (
-              <div key={rx.id} className="bg-white rounded-xl border border-gray-200 p-5">
+              <div key={rx.id} className="bg-card rounded-xl border border-border p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <span
-                      className={`text-[11px] px-2 py-0.5 rounded-full ${rx.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}
+                      className={`text-[12px] px-2 py-0.5 rounded ${rx.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'}`}
                     >
                       {rx.status}
                     </span>
@@ -175,27 +170,27 @@ export function PrescriptionsPage() {
                         {patient.firstName} {patient.lastName}
                       </span>
                     )}
-                    <span className="text-[12px] text-gray-500">
-                      {rx.date} · {rx.doctorName}
+                    <span className="text-[12px] text-muted-foreground">
+                      {rx.date}, {rx.doctorName}
                     </span>
                   </div>
-                  <span className="text-[11px] text-gray-400">{rx.id}</span>
+                  <span className="text-[12px] text-muted-foreground">{rx.id}</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {rx.medications.map((med, i) => (
-                    <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                      <Pill className="w-4 h-4 text-purple-500 mt-0.5 shrink-0" />
+                    <div key={i} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+                      <Pill className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                       <div>
                         <ClinicalText as="strong" className="text-[14px]">
                           {med.name} {med.dosage}
                         </ClinicalText>
-                        <p className="text-[12px] text-gray-500 notranslate" translate="no">
-                          {med.frequency} · {med.duration}
+                        <p className="text-[12px] text-muted-foreground notranslate" translate="no">
+                          {med.frequency}, {med.duration}
                         </p>
                         {med.interactions?.map(int => (
                           <p
                             key={int}
-                            className="text-[11px] text-amber-600 mt-1 flex items-center gap-1"
+                            className="text-[12px] text-amber-800 mt-1 flex items-center gap-1"
                           >
                             <AlertTriangle className="w-3 h-3" /> {int}
                           </p>

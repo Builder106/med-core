@@ -245,8 +245,10 @@ export function PatientDetailPage() {
     };
   }, [id]);
 
-  if (loading) return <div className="text-center py-12 text-gray-500">Loading patient…</div>;
-  if (!patient) return <div className="text-center py-12 text-gray-500">Patient not found</div>;
+  if (loading)
+    return <div className="text-center py-12 text-muted-foreground">Loading patient…</div>;
+  if (!patient)
+    return <div className="text-center py-12 text-muted-foreground">Patient not found</div>;
 
   const tabs: {
     key: Tab;
@@ -256,7 +258,7 @@ export function PatientDetailPage() {
   }[] = [
     { key: 'timeline', label: 'Timeline', icon: Clock, count: encounters.length },
     { key: 'prescriptions', label: 'Prescriptions', icon: Pill, count: prescriptions.length },
-    { key: 'labs', label: 'Lab Results', icon: FlaskConical, count: labs.length },
+    { key: 'labs', label: 'Lab results', icon: FlaskConical, count: labs.length },
     { key: 'vaccinations', label: 'Vaccinations', icon: Syringe, count: vaccinations.length },
   ];
 
@@ -264,41 +266,41 @@ export function PatientDetailPage() {
     <div className="max-w-5xl space-y-6">
       <Link
         to="/patients"
-        className="flex items-center gap-1 text-purple-600 text-[13px] hover:underline"
+        className="flex items-center gap-1 text-primary text-[13px] hover:underline"
       >
         <ArrowLeft className="w-4 h-4" /> Back to patients
       </Link>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col sm:flex-row gap-5">
+      <div className="bg-card rounded-xl border border-border p-5 flex flex-col sm:flex-row gap-5">
         <div className="flex items-center gap-4 flex-1">
-          <div className="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center text-white text-[20px] shrink-0">
+          <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center text-white text-[20px] shrink-0">
             {patient.firstName[0]}
             {patient.lastName[0]}
           </div>
           <div>
-            <h1 className="text-[20px]">
+            <h1 className="text-[22px] font-semibold text-foreground">
               {patient.firstName} {patient.lastName}
             </h1>
-            <p className="text-[13px] text-gray-500">
-              {patient.id} • {patient.nationalId}
-              {patient.gender ? ` • ${patient.gender === 'M' ? 'Male' : 'Female'}` : ''} • DOB:{' '}
+            <p className="text-[13px] text-muted-foreground">
+              {patient.id}, {patient.nationalId}
+              {patient.gender ? `, ${patient.gender === 'M' ? 'Male' : 'Female'}` : ''}, DOB:{' '}
               {patient.dob}
             </p>
             <div className="flex flex-wrap gap-2 mt-2">
               {patient.bloodType && (
-                <span className="text-[11px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                <span className="text-[12px] bg-muted text-foreground border border-border px-2 py-0.5 rounded">
                   {patient.bloodType}
                 </span>
               )}
               {patient.insuranceScheme && (
-                <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                <span className="text-[12px] bg-muted text-foreground border border-border px-2 py-0.5 rounded">
                   {patient.insuranceScheme}
                 </span>
               )}
               {patient.allergies.map(a => (
                 <span
                   key={a}
-                  className="text-[11px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full flex items-center gap-1"
+                  className="text-[12px] bg-red-100 text-red-700 px-2 py-0.5 rounded flex items-center gap-1"
                 >
                   <AlertTriangle className="w-3 h-3" />
                   {a}
@@ -306,21 +308,21 @@ export function PatientDetailPage() {
               ))}
               {registry && (
                 <span
-                  className={`text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 ${registry.verified ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}
+                  className={`text-[12px] px-2 py-0.5 rounded flex items-center gap-1 ${registry.verified ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}
                 >
                   <BadgeCheck className="w-3 h-3" />
                   {registry.verified
-                    ? `Registry verified${registry.matchedName ? ` · ${registry.matchedName}` : ''}`
+                    ? `Registry verified${registry.matchedName ? `, ${registry.matchedName}` : ''}`
                     : `Registry: ${registry.status.replace('_', ' ')}`}
                 </span>
               )}
               {insurance && (
                 <span
-                  className={`text-[11px] px-2 py-0.5 rounded-full flex items-center gap-1 ${insurance.eligible ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}`}
+                  className={`text-[12px] px-2 py-0.5 rounded flex items-center gap-1 ${insurance.eligible ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}`}
                 >
                   <ShieldCheck className="w-3 h-3" />
-                  {insurance.scheme} · {insurance.status}
-                  {insurance.validThrough ? ` · valid thru ${insurance.validThrough}` : ''}
+                  {insurance.scheme}, {insurance.status}
+                  {insurance.validThrough ? `, valid thru ${insurance.validThrough}` : ''}
                 </span>
               )}
             </div>
@@ -328,7 +330,7 @@ export function PatientDetailPage() {
               <button
                 onClick={handleVerifyRegistry}
                 disabled={verifyingRegistry}
-                className="text-[11px] px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-60 flex items-center gap-1"
+                className="text-[12px] px-2.5 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-60 flex items-center gap-1"
               >
                 {verifyingRegistry ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -340,7 +342,7 @@ export function PatientDetailPage() {
               <button
                 onClick={handleCheckInsurance}
                 disabled={verifyingInsurance}
-                className="text-[11px] px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-60 flex items-center gap-1"
+                className="text-[12px] px-2.5 py-1 rounded-lg border border-border hover:bg-muted disabled:opacity-60 flex items-center gap-1"
               >
                 {verifyingInsurance ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -353,59 +355,57 @@ export function PatientDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <div className="bg-white p-2 rounded-lg border border-gray-200">
+          <div className="bg-card p-2 rounded-lg border border-border">
             <QRCodeSVG value={patient.id} size={72} />
           </div>
           <Link
             to="/ai-assistant"
-            className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors text-[13px]"
+            className="af-focus flex items-center gap-2 px-3 py-2 bg-card border border-border text-foreground rounded-md hover:bg-muted text-[13px]"
           >
-            <Bot className="w-4 h-4" /> AI Summary
+            <Bot className="w-4 h-4" aria-hidden /> AI summary
           </Link>
         </div>
       </div>
 
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
+      <div className="flex gap-1 bg-muted p-1 rounded-lg overflow-x-auto">
         {tabs.map(tb => (
           <button
             key={tb.key}
             onClick={() => setTab(tb.key)}
-            className={`af-tap af-focus inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] transition-colors whitespace-nowrap ${tab === tb.key ? 'bg-white shadow-sm text-purple-700' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`af-tap af-focus inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] transition-colors whitespace-nowrap ${tab === tb.key ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}
           >
             <tb.icon className="w-4 h-4" /> {tb.label}{' '}
-            <span className="text-[11px] bg-gray-200 px-1.5 py-0.5 rounded-full">{tb.count}</span>
+            <span className="text-[12px] bg-border px-1.5 py-0.5 rounded">{tb.count}</span>
           </button>
         ))}
       </div>
 
       {tab === 'timeline' && (
         <div className="relative pl-6">
-          <div className="absolute left-2.5 top-0 bottom-0 w-px bg-purple-200" />
+          <div className="absolute left-2.5 top-0 bottom-0 w-px bg-accent" />
           <div className="space-y-4">
             {encounters.map(enc => (
               <div key={enc.id} className="relative">
-                <div
-                  className={`absolute -left-[14px] top-4 w-3 h-3 rounded-full border-2 border-white ${enc.type === 'emergency' ? 'bg-red-500' : enc.type === 'lab' ? 'bg-blue-500' : enc.type === 'vaccination' ? 'bg-green-500' : 'bg-purple-500'}`}
-                />
-                <div className="bg-white rounded-xl border border-gray-200 p-4 ml-2">
+                <div className="absolute -left-[14px] top-4 w-3 h-3 rounded-full border-2 border-card bg-primary" />
+                <div className="bg-card rounded-xl border border-border p-4 ml-2">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-[11px] px-2 py-0.5 rounded-full ${enc.type === 'emergency' ? 'bg-red-100 text-red-700' : enc.type === 'lab' ? 'bg-blue-100 text-blue-700' : enc.type === 'vaccination' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}
+                        className={`text-[12px] px-2 py-0.5 rounded ${enc.type === 'emergency' ? 'bg-red-100 text-red-700' : enc.type === 'lab' ? 'bg-blue-100 text-blue-700' : enc.type === 'vaccination' ? 'bg-green-100 text-green-700' : 'bg-accent text-primary'}`}
                       >
                         {enc.type}
                       </span>
-                      <span className="text-[13px] text-gray-500">{enc.date}</span>
+                      <span className="text-[13px] text-muted-foreground">{enc.date}</span>
                     </div>
-                    <span className="text-[12px] text-gray-400">{enc.facilityName}</span>
+                    <span className="text-[12px] text-muted-foreground">{enc.facilityName}</span>
                   </div>
                   <h3 className="text-[15px]">{enc.diagnosis}</h3>
-                  <p className="text-[13px] text-gray-600 mt-1">{enc.notes}</p>
-                  <p className="text-[12px] text-gray-400 mt-2">{enc.doctorName}</p>
+                  <p className="text-[13px] text-muted-foreground mt-1">{enc.notes}</p>
+                  <p className="text-[12px] text-muted-foreground mt-2">{enc.doctorName}</p>
                   {enc.vitals && (
-                    <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-gray-100">
+                    <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-border">
                       {Object.entries(enc.vitals).map(([k, v]) => (
-                        <span key={k} className="text-[11px] bg-gray-50 px-2 py-1 rounded">
+                        <span key={k} className="text-[12px] bg-muted px-2 py-1 rounded">
                           <strong className="uppercase">{k}:</strong> {v}
                         </span>
                       ))}
@@ -415,7 +415,7 @@ export function PatientDetailPage() {
               </div>
             ))}
             {encounters.length === 0 && (
-              <p className="text-[13px] text-gray-400">No encounters recorded.</p>
+              <p className="text-[13px] text-muted-foreground">No encounters recorded.</p>
             )}
           </div>
         </div>
@@ -424,36 +424,36 @@ export function PatientDetailPage() {
       {tab === 'prescriptions' && (
         <div className="space-y-4">
           {prescriptions.map(rx => (
-            <div key={rx.id} className="bg-white rounded-xl border border-gray-200 p-4">
+            <div key={rx.id} className="bg-card rounded-xl border border-border p-4">
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <span
-                    className={`text-[11px] px-2 py-0.5 rounded-full ${rx.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}
+                    className={`text-[12px] px-2 py-0.5 rounded ${rx.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'}`}
                   >
                     {rx.status}
                   </span>
-                  <span className="text-[12px] text-gray-500 ml-2">
-                    {rx.date} • {rx.doctorName}
+                  <span className="text-[12px] text-muted-foreground ml-2">
+                    {rx.date}, {rx.doctorName}
                   </span>
                 </div>
-                <span className="text-[11px] text-gray-400">{rx.id}</span>
+                <span className="text-[12px] text-muted-foreground">{rx.id}</span>
               </div>
               <div className="space-y-2">
                 {rx.medications.map((med, i) => (
-                  <div key={i} className="flex items-start gap-3 p-2 bg-gray-50 rounded-lg">
-                    <Pill className="w-4 h-4 text-purple-500 mt-0.5" />
+                  <div key={i} className="flex items-start gap-3 p-2 bg-muted rounded-lg">
+                    <Pill className="w-4 h-4 text-primary mt-0.5" />
                     <div>
                       <p className="text-[14px]">
                         {med.name} {med.dosage}
                       </p>
-                      <p className="text-[12px] text-gray-500">
+                      <p className="text-[12px] text-muted-foreground">
                         {med.frequency}
-                        {med.duration ? ` • ${med.duration}` : ''}
+                        {med.duration ? `, ${med.duration}` : ''}
                       </p>
                       {med.interactions?.map(int => (
                         <p
                           key={int}
-                          className="text-[11px] text-amber-600 mt-1 flex items-center gap-1"
+                          className="text-[12px] text-amber-800 mt-1 flex items-center gap-1"
                         >
                           <AlertTriangle className="w-3 h-3" /> {int}
                         </p>
@@ -465,7 +465,7 @@ export function PatientDetailPage() {
             </div>
           ))}
           {prescriptions.length === 0 && (
-            <p className="text-[13px] text-gray-400">No prescriptions recorded.</p>
+            <p className="text-[13px] text-muted-foreground">No prescriptions recorded.</p>
           )}
         </div>
       )}
@@ -488,7 +488,7 @@ export function PatientDetailPage() {
                 header: 'Status',
                 cell: l => (
                   <span
-                    className={`text-[11px] px-2 py-0.5 rounded-full ${l.status === 'critical' ? 'bg-red-100 text-red-700' : l.status === 'abnormal' || l.status === 'high' || l.status === 'low' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}
+                    className={`text-[12px] px-2 py-0.5 rounded ${l.status === 'critical' ? 'bg-red-100 text-red-700' : l.status === 'abnormal' || l.status === 'high' || l.status === 'low' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-700'}`}
                   >
                     {l.status}
                   </span>
@@ -501,7 +501,7 @@ export function PatientDetailPage() {
           rowKey={l => l.id}
           emptyLabel="No lab results"
           mobileTitle={l => l.testName}
-          mobileSubtitle={l => `${l.date} · ${l.result}`}
+          mobileSubtitle={l => `${l.date}, ${l.result}`}
         />
       )}
 
@@ -510,24 +510,24 @@ export function PatientDetailPage() {
           {vaccinations.map(v => (
             <div
               key={v.id}
-              className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4"
+              className="bg-card rounded-xl border border-border p-4 flex items-center gap-4"
             >
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Syringe className="w-5 h-5 text-green-600" />
+                <Syringe className="w-5 h-5 text-green-700" />
               </div>
               <div className="flex-1">
                 <p className="text-[14px]">
                   {v.vaccine} — {v.dose}
                 </p>
-                <p className="text-[12px] text-gray-500">
+                <p className="text-[12px] text-muted-foreground">
                   {v.date}
-                  {v.site ? ` • ${v.site}` : ''}
-                  {v.batchNumber ? ` • Batch: ${v.batchNumber}` : ''}
+                  {v.site ? `, ${v.site}` : ''}
+                  {v.batchNumber ? `, Batch: ${v.batchNumber}` : ''}
                 </p>
               </div>
               {v.nextDue && (
                 <span
-                  className={`text-[11px] px-2 py-1 rounded-full ${new Date(v.nextDue) < new Date() ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}
+                  className={`text-[12px] px-2 py-1 rounded ${new Date(v.nextDue) < new Date() ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}
                 >
                   {new Date(v.nextDue) < new Date() ? 'OVERDUE' : `Next: ${v.nextDue}`}
                 </span>
@@ -535,7 +535,7 @@ export function PatientDetailPage() {
             </div>
           ))}
           {vaccinations.length === 0 && (
-            <p className="text-[13px] text-gray-400">No vaccinations recorded.</p>
+            <p className="text-[13px] text-muted-foreground">No vaccinations recorded.</p>
           )}
         </div>
       )}

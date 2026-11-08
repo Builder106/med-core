@@ -148,21 +148,21 @@ export function PrescriptionFormModal({ open, onClose, patientId, doctorId, onSa
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto"
+        className="bg-card rounded-t-3xl sm:rounded-xl shadow-2xl w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="sm:hidden flex justify-center pt-2 pb-1" aria-hidden>
-          <div className="h-1.5 w-10 rounded-full bg-[#E1D3B8]" />
+          <div className="h-1.5 w-10 rounded-full bg-border" />
         </div>
-        <div className="px-5 py-4 sm:p-5 border-b border-[#E7D9BB] flex items-center justify-between sticky top-0 bg-white z-10">
-          <h2 className="text-lg text-[#1F1B18]">{t('prescriptions.addNew')}</h2>
+        <div className="px-5 py-4 sm:p-5 border-b border-border flex items-center justify-between sticky top-0 bg-card z-10">
+          <h2 className="text-lg text-foreground">{t('prescriptions.addNew')}</h2>
           <button
             onClick={onClose}
-            className="af-tap af-press af-focus inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-[#F3ECE1]"
+            className="af-tap af-press af-focus inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-background"
             aria-label={t('common.close')}
           >
-            <X className="w-5 h-5 text-[#5B5149]" />
+            <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
@@ -170,10 +170,10 @@ export function PrescriptionFormModal({ open, onClose, patientId, doctorId, onSa
 
         <div className="p-5 space-y-4">
           <div className="grid sm:grid-cols-2 gap-3">
-            <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground flex flex-col gap-1">
               {t('prescriptions.drug')}
               <input
-                className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm notranslate"
+                className="af-focus rounded-lg border border-input px-3 py-2 text-sm notranslate"
                 value={drugName}
                 onChange={e => setDrugName(e.target.value)}
                 placeholder={t('prescriptions.drugPlaceholder')}
@@ -181,53 +181,51 @@ export function PrescriptionFormModal({ open, onClose, patientId, doctorId, onSa
                 autoFocus
               />
             </label>
-            <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground flex flex-col gap-1">
               {t('prescriptions.dosage')}
               <input
-                className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm notranslate"
+                className="af-focus rounded-lg border border-input px-3 py-2 text-sm notranslate"
                 value={dosage}
                 onChange={e => setDosage(e.target.value)}
                 placeholder="500mg"
                 translate="no"
               />
             </label>
-            <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground flex flex-col gap-1">
               {t('prescriptions.frequency')}
               <input
-                className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm"
+                className="af-focus rounded-lg border border-input px-3 py-2 text-sm"
                 value={frequency}
                 onChange={e => setFrequency(e.target.value)}
               />
             </label>
-            <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+            <label className="text-xs text-muted-foreground flex flex-col gap-1">
               {t('prescriptions.duration')}
               <input
-                className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm"
+                className="af-focus rounded-lg border border-input px-3 py-2 text-sm"
                 value={duration}
                 onChange={e => setDuration(e.target.value)}
               />
             </label>
           </div>
-          <label className="text-xs text-[#5B5149] flex flex-col gap-1">
+          <label className="text-xs text-muted-foreground flex flex-col gap-1">
             {t('prescriptions.notes')}
             <textarea
               rows={2}
-              className="af-focus rounded-lg border border-[#D9C8AE] px-3 py-2 text-sm"
+              className="af-focus rounded-lg border border-input px-3 py-2 text-sm"
               value={notes}
               onChange={e => setNotes(e.target.value)}
             />
           </label>
 
           <div>
-            <p className="text-[11px] text-[#5B5149] uppercase tracking-widest mb-2">
-              Current medications
-            </p>
-            {currentMeds.length === 0 && <p className="text-xs text-[#5B5149]">None.</p>}
+            <p className="text-[12px] text-muted-foreground mb-2">Current medications</p>
+            {currentMeds.length === 0 && <p className="text-xs text-muted-foreground">None.</p>}
             <ul className="flex flex-wrap gap-2">
               {currentMeds.map(m => (
                 <li
                   key={m.id}
-                  className="text-xs rounded-full bg-[#F3ECE1] border border-[#D9C8AE] px-2 py-1"
+                  className="text-xs rounded bg-background border border-border px-2 py-1"
                 >
                   <ClinicalText>
                     {m.drugName} {m.dosage}
@@ -239,7 +237,7 @@ export function PrescriptionFormModal({ open, onClose, patientId, doctorId, onSa
 
           <div aria-live="polite" className="space-y-2">
             {check.loading && (
-              <p className="text-xs text-[#5B5149]">{t('prescriptions.checking')}</p>
+              <p className="text-xs text-muted-foreground">{t('prescriptions.checking')}</p>
             )}
             {!check.loading && drugName.length >= 3 && check.results.length === 0 && (
               <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
@@ -255,9 +253,7 @@ export function PrescriptionFormModal({ open, onClose, patientId, doctorId, onSa
                   <p className="flex items-start gap-2">
                     <Icon className="w-4 h-4 mt-0.5 shrink-0" />
                     <span>
-                      <span className="text-[11px] uppercase tracking-widest font-semibold mr-1">
-                        {t(theme.labelKey)}
-                      </span>
+                      <span className="text-[12px] font-semibold mr-1">{t(theme.labelKey)}</span>
                       <ClinicalText>
                         {r.drugA} + {r.drugB}
                       </ClinicalText>
@@ -306,7 +302,7 @@ export function PrescriptionFormModal({ open, onClose, patientId, doctorId, onSa
                   maxLength={6}
                   value={pin}
                   onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
-                  className="af-focus rounded-lg border border-red-300 px-2 py-1 text-sm notranslate tracking-[0.3em] text-black"
+                  className="af-focus rounded-lg border border-red-300 px-2 py-1 text-sm notranslate text-black"
                   placeholder="••••"
                   translate="no"
                 />
@@ -323,20 +319,20 @@ export function PrescriptionFormModal({ open, onClose, patientId, doctorId, onSa
           <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center sm:justify-end gap-2 pt-2">
             <button
               onClick={onClose}
-              className="af-tap af-press af-focus px-3 py-2 rounded-lg text-sm text-[#5B5149] border border-[#D9C8AE] sm:border-0 bg-white"
+              className="af-tap af-press af-focus px-3 py-2 rounded-lg text-sm text-muted-foreground border border-border sm:border-0 bg-card"
             >
               {t('common.cancel')}
             </button>
             <button
               onClick={submit}
               disabled={!canSubmit}
-              className={`af-tap af-press af-focus px-4 py-2 rounded-lg text-sm text-white ${canSubmit ? (hasCritical ? 'bg-red-600 hover:bg-red-700' : 'bg-[#214838] hover:bg-[#1B3D30]') : 'bg-[#9EA4A0] cursor-not-allowed'}`}
+              className={`af-tap af-press af-focus px-4 py-2 rounded-lg text-sm text-white ${canSubmit ? (hasCritical ? 'bg-red-600 hover:bg-red-700' : 'bg-primary hover:bg-primary-strong') : 'bg-muted-foreground cursor-not-allowed'}`}
             >
               {hasCritical ? t('prescriptions.override') : t('common.save')}
             </button>
           </div>
           {blockedByCritical && (
-            <p className="text-right text-[11px] text-red-700">{t('prescriptions.saveBlocked')}</p>
+            <p className="text-right text-[12px] text-red-700">{t('prescriptions.saveBlocked')}</p>
           )}
         </div>
       </div>
