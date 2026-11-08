@@ -2,6 +2,7 @@ import { Download } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ResponsiveTable, type TableColumn } from '../components/ui/responsive-table';
 import { auditLog as mockAudit } from '../data/mock-data';
+import { downloadCsv } from '../lib/csv';
 import { listAudit, type AuditEntry } from '../services/api';
 
 interface AuditRow {
@@ -24,7 +25,7 @@ function apiToRow(entry: AuditEntry): AuditRow {
     role: entry.role ?? 'unknown',
     action: entry.action,
     section: entry.path.replace(/^\//, ''),
-    facility: `${entry.method} · ${entry.status}`,
+    facility: `${entry.method}, ${entry.status}`,
   };
 }
 
@@ -71,24 +72,24 @@ export function AuditLogPage() {
       key: 'ts',
       header: 'Timestamp',
       cell: a => (
-        <span className="whitespace-nowrap text-[12px] text-gray-500">
+        <span className="whitespace-nowrap text-[12px] text-muted-foreground">
           {new Date(a.timestamp).toLocaleString()}
         </span>
       ),
     },
     { key: 'pid', header: 'Patient ID', cell: a => a.patientId },
-    { key: 'by', header: 'Accessed By', cell: a => a.accessedBy },
+    { key: 'by', header: 'Accessed by', cell: a => a.accessedBy },
     {
       key: 'role',
       header: 'Role',
-      cell: a => <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[12px]">{a.role}</span>,
+      cell: a => <span className="bg-muted px-2 py-0.5 rounded text-[12px]">{a.role}</span>,
     },
     { key: 'action', header: 'Action', cell: a => a.action },
     {
       key: 'section',
       header: 'Section',
       cell: a => (
-        <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full text-[12px]">
+        <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[12px]">
           {a.section}
         </span>
       ),
@@ -99,14 +100,35 @@ export function AuditLogPage() {
   return (
     <div className="max-w-5xl space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h1 className="text-[22px]">Audit Log</h1>
-        <button className="af-tap af-press af-focus inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-[14px]">
+        <h1 className="text-[22px] font-semibold text-foreground">Audit log</h1>
+        <button
+          type="button"
+          disabled={rows.length === 0}
+          onClick={() =>
+            downloadCsv('audit-log', [
+              ['Time', 'Patient', 'User', 'Role', 'Action', 'Section', 'Request'],
+              ...rows.map(r => [
+                new Date(r.timestamp).toISOString(),
+                r.patientId,
+                r.accessedBy,
+                r.role,
+                r.action,
+                r.section,
+                r.facility,
+              ]),
+            ])
+          }
+          className="af-tap af-press af-focus inline-flex items-center gap-2 px-3 py-2 bg-card border border-border text-foreground rounded-md hover:bg-muted text-[14px] disabled:opacity-50"
+        >
           <Download className="w-4 h-4" /> Export CSV
         </button>
       </div>
       {!apiOk && (
-        <div className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          API unreachable — showing legacy demo data. Audit endpoint is admin-only.
+        <div
+          role="status"
+          className="text-[13px] text-amber-950 bg-amber-50 border border-amber-300 rounded-md px-3 py-2"
+        >
+          The server is unreachable, so this page shows sample data. Audit endpoint is admin-only.
         </div>
       )}
       <ResponsiveTable
@@ -114,7 +136,7 @@ export function AuditLogPage() {
         rows={rows}
         rowKey={a => a.id}
         emptyLabel={loading ? 'Loading audit log…' : 'No audit entries'}
-        mobileTitle={a => `${a.action} · ${a.section}`}
+        mobileTitle={a => `${a.action}, ${a.section}`}
         mobileSubtitle={a => `${a.accessedBy} — ${new Date(a.timestamp).toLocaleString()}`}
       />
     </div>

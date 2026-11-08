@@ -2,6 +2,7 @@ import { AlertTriangle, Download } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ResponsiveTable, type TableColumn } from '../components/ui/responsive-table';
 import { inventory as mockInventory } from '../data/mock-data';
+import { downloadCsv } from '../lib/csv';
 import { listInventory, type InventoryItem } from '../services/api';
 
 interface InvRow {
@@ -73,7 +74,7 @@ export function InventoryPage() {
     {
       key: 'cat',
       header: 'Category',
-      cell: i => <span className="text-[12px] text-gray-500">{i.category}</span>,
+      cell: i => <span className="text-[12px] text-muted-foreground">{i.category}</span>,
     },
     {
       key: 'qty',
@@ -86,27 +87,24 @@ export function InventoryPage() {
     },
     {
       key: 'reorder',
-      header: 'Reorder Level',
+      header: 'Reorder level',
       cell: i => (
-        <span className="text-[13px] text-gray-500">
+        <span className="text-[13px] text-muted-foreground">
           {i.reorderLevel} {i.unit}
         </span>
       ),
       hideOnMobile: true,
     },
-    { key: 'rx', header: 'Active Rx', cell: i => i.linkedPrescriptions, hideOnMobile: true },
     {
       key: 'status',
       header: 'Status',
       cell: i =>
         i.quantity <= i.reorderLevel ? (
-          <span className="inline-flex items-center gap-1 text-[11px] text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
-            <AlertTriangle className="w-3 h-3" /> LOW STOCK
+          <span className="inline-flex items-center gap-1 text-[13px] font-medium text-red-800">
+            <AlertTriangle className="w-3.5 h-3.5" aria-hidden /> Reorder now
           </span>
         ) : (
-          <span className="text-[11px] text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
-            In Stock
-          </span>
+          <span className="text-[13px] text-muted-foreground">In stock</span>
         ),
     },
   ];
@@ -114,31 +112,44 @@ export function InventoryPage() {
   return (
     <div className="max-w-5xl space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h1 className="text-[22px]">Drug Inventory</h1>
-        <button className="af-tap af-press af-focus inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-[14px]">
-          <Download className="w-4 h-4" /> Export Report
+        <h1 className="text-[22px] font-semibold text-foreground">Drug inventory</h1>
+        <button
+          type="button"
+          disabled={rows.length === 0}
+          onClick={() =>
+            downloadCsv('inventory', [
+              ['Item', 'Category', 'Quantity', 'Unit', 'Reorder level'],
+              ...sorted.map(i => [i.name, i.category, i.quantity, i.unit, i.reorderLevel]),
+            ])
+          }
+          className="af-tap af-press af-focus inline-flex items-center gap-2 px-3 py-2 bg-card border border-border text-foreground rounded-md hover:bg-muted text-[14px] disabled:opacity-50"
+        >
+          <Download className="w-4 h-4" aria-hidden /> Export CSV
         </button>
       </div>
       {!apiOk && (
-        <div className="text-[12px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          API unreachable — showing legacy demo data.
+        <div
+          role="status"
+          className="text-[13px] text-amber-950 bg-amber-50 border border-amber-300 rounded-md px-3 py-2"
+        >
+          The server is unreachable, so this page shows sample data.
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-[12px] text-gray-500">Total Items</p>
-          <p className="text-[28px]">{rows.length}</p>
+      <dl className="grid grid-cols-2 gap-3 max-w-md">
+        <div className="bg-card rounded-lg border border-border px-4 py-3">
+          <dt className="text-[13px] text-muted-foreground">Items</dt>
+          <dd className="text-[24px] font-semibold text-foreground">{rows.length}</dd>
         </div>
-        <div className="bg-red-50 rounded-xl border border-red-200 p-4">
-          <p className="text-[12px] text-red-600">Low Stock</p>
-          <p className="text-[28px] text-red-700">{lowStock}</p>
+        <div className="bg-card rounded-lg border border-border px-4 py-3">
+          <dt className="text-[13px] text-muted-foreground">At or below reorder level</dt>
+          <dd
+            className={`text-[24px] font-semibold ${lowStock > 0 ? 'text-destructive' : 'text-foreground'}`}
+          >
+            {lowStock}
+          </dd>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-[12px] text-gray-500">Linked Prescriptions</p>
-          <p className="text-[28px]">{rows.reduce((s, i) => s + i.linkedPrescriptions, 0)}</p>
-        </div>
-      </div>
+      </dl>
 
       <ResponsiveTable
         columns={columns}
@@ -146,7 +157,7 @@ export function InventoryPage() {
         rowKey={i => i.id}
         emptyLabel={loading ? 'Loading inventory…' : 'No inventory'}
         mobileTitle={i => i.name}
-        mobileSubtitle={i => `${i.category} · ${i.quantity} ${i.unit}`}
+        mobileSubtitle={i => `${i.category}, ${i.quantity} ${i.unit}`}
       />
     </div>
   );
