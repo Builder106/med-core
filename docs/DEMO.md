@@ -6,7 +6,7 @@ This is what actually needs a phone — and for each one, what to show, why it's
 
 | #   | Feature                                      | What it proves                                  |
 | --- | -------------------------------------------- | ----------------------------------------------- |
-| 1   | **PWA install**                              | "Works like a native app, offline-capable"      |
+| 1   | **PWA install**                              | Installable app with a cached UI shell          |
 | 2   | **Voice consultation recording**             | AI note-gen in a doctor's pocket                |
 | 3   | **Video consultation**                       | Telemedicine on a patient's phone               |
 | 4   | **Medication reminders with push**           | Real lockscreen alerts, even when app is closed |
@@ -56,7 +56,7 @@ Copy `server/.env.example`to`server/.env` on the laptop and fill only what you w
 | Real SMS round-trip      | `AT_API_KEY`, `AT_USERNAME`, `DEMO_DOCTOR_PHONE=+1yourmobile`                      |
 | Real push notifications  | `WEB_PUSH_PUBLIC_KEY`, `WEB_PUSH_PRIVATE_KEY` (`npx web-push generate-vapid-keys`) |
 
-Everything you leave blank runs against the built-in mock. Restart `npm run demo`after editing`.env`.
+Several integrations use fallbacks when credentials are absent. Video falls back to a public Jitsi room, which requires network access. Restart `npm run demo` after editing `.env`.
 
 ---
 
@@ -135,7 +135,7 @@ Launch from the home-screen icon. The browser chrome disappears; you get a splas
 
 ### Talking point
 
-"Low-end Android phones install the app in under 200 KB, cache the UI via the service worker in `public/sw.js`, and work through offline pockets."
+"The service worker in `public/sw.js` caches the UI shell and other non-API GET responses. API-backed workflows need separate offline testing."
 
 ---
 
@@ -326,14 +326,14 @@ Your laptop is on your home Wi-Fi. Rural Kenya is on a 2G cell, which behaves di
 
 ### Show it — any of these
 
-- **Turn Wi-Fi off on your phone**, use LTE. Load the tunnel URL — observe the app still loads via the cached service-worker shell even if API calls are slow.
+- **Turn Wi-Fi off on your phone**, use LTE, and load the tunnel URL. LTE is still a network connection; this demonstrates cellular access, not offline operation.
 - In the app header, toggle **Low-bandwidth** on → show that image-heavy views switch to compressed text/icon mode.
-- Toggle **Offline mode** on → show the app continues to work against cached data; the header badge flips to amber "Offline sync"; submissions queue.
+- Toggle **Offline mode** on to show the interface control and amber "Offline sync" label. Do not claim that submissions queue or synchronize: the current toggle does not implement that behavior.
 - iOS: turn on **Settings → Developer → Network Link Conditioner → 3G** to throttle live.
 
 ### Talking point
 
-"Service worker caches the UI shell. Offline mode queues writes and reconciles when online. Low-bandwidth mode drops avatars/images and uses iconography — the UX stays usable on 2G."
+"The service worker caches the UI shell and other non-API GET responses. API requests are not cached, and the offline toggle does not queue writes. Test individual workflows under the intended network conditions before claiming they work offline or on 2G."
 
 ---
 

@@ -14,7 +14,7 @@
 [![FHIR](https://img.shields.io/badge/FHIR-R4-orange.svg)](server/src/lib/fhir-mappers.ts)
 [![Yale AIS](https://img.shields.io/badge/Yale%20AIS%20IV-Winner-DAB776.svg)](https://www.yaleafricainnovation.org/)
 
-MedCore is a centralised digital health records platform for African healthcare providers. The Vite + React PWA connects to a Node + Express + SQLite (libSQL) API. It implements the [PRD's eight features](docs/PRD.md) end to end with FHIR-shaped resources, RBAC-gated access, and an AI assist layer that summarises patient context and surfaces risk flags. Groq and Gemini provide voice transcription when configured; every external integration has a working mock, so the demo runs offline.
+MedCore is a centralised digital health records platform for African healthcare providers. The Vite + React PWA connects to a Node + Express + SQLite (libSQL) API. It implements the [PRD's eight features](docs/PRD.md) with FHIR-shaped resources, RBAC-gated access, and an AI assist layer that summarises patient context and surfaces risk flags. Groq and Gemini provide voice transcription when configured; integration fallbacks support development and demos without some service credentials. The service worker caches the app shell and other non-API GET responses, but that does not establish that API-backed workflows work offline.
 
 <p align="center">
   <img src="assets/screenshot.png" alt="The MedCore doctor workspace dashboard for Dr. Wanjiku Njeri. A sidebar lists the clinical tools. The main area has patient lookup, an appointment queue, a unified timeline, an AI advisory panel, a referral tracker and a safety checklist." width="880">
@@ -73,7 +73,7 @@ A new prescription is checked against every active one before it is saved. A cri
 
 [Edit the diagram](assets/diagrams/prescription-guard.html).
 
-All external integrations fall back to mocks when API keys are absent, so the canonical journey above works offline.
+Several integrations have fallbacks when API keys are absent. The video fallback uses a public Jitsi room and still needs network access. The service worker does not cache `/api/` requests or queue writes, so do not assume the complete journey works offline.
 
 ## Demo recordings
 
